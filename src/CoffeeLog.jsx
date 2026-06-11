@@ -53,6 +53,8 @@ export default function CoffeeLog({ method }) {
     }
   })
   const [expandedId, setExpandedId] = useState(null)
+  const [formOpen, setFormOpen] = useState(true)
+  const [ratiosOpen, setRatiosOpen] = useState(true)
 
   useEffect(() => {
     localStorage.setItem('coffee-log-entries', JSON.stringify(entries))
@@ -81,65 +83,121 @@ export default function CoffeeLog({ method }) {
   return (
     <div className="space-y-6">
       {method === 'V60' && (
-        <div className="bg-amber-100 rounded-2xl border border-amber-200 p-5">
-          <h2 className="text-base font-semibold text-amber-900 mb-3">Recommended Ratios</h2>
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              { coffee: '15g', water: '240–255g' },
-              { coffee: '30g', water: '480g' },
-            ].map(({ coffee, water }) => (
-              <div key={coffee} className="bg-white rounded-xl px-4 py-3 border border-amber-200">
-                <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Coffee → Water</p>
-                <p className="text-sm font-semibold text-amber-900">{coffee} → {water}</p>
+        <div className="bg-amber-100 rounded-2xl border border-amber-200 overflow-hidden">
+          <button
+            onClick={() => setRatiosOpen((o) => !o)}
+            className="w-full flex items-center justify-between px-5 py-4 hover:bg-amber-200/50 transition-colors"
+          >
+            <h2 className="text-base font-semibold text-amber-900">Recommended Ratios</h2>
+            <svg className={`w-5 h-5 text-amber-600 transition-transform duration-300 ${ratiosOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${ratiosOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+            <div className="overflow-hidden">
+              <div className="px-5 pb-5">
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { coffee: '15g', water: '240–255g' },
+                    { coffee: '30g', water: '480g' },
+                  ].map(({ coffee, water }) => (
+                    <div key={coffee} className="bg-white rounded-xl px-4 py-3 border border-amber-200">
+                      <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Coffee → Water</p>
+                      <p className="text-sm font-semibold text-amber-900">{coffee} → {water}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
+            </div>
           </div>
         </div>
       )}
 
       {method === 'Espresso' && (
-        <div className="bg-amber-100 rounded-2xl border border-amber-200 p-5">
-          <h2 className="text-base font-semibold text-amber-900 mb-3">Recommended Ratios</h2>
-          <div className="bg-white rounded-xl px-4 py-3 border border-amber-200 mb-3">
-            <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Coffee → Yield</p>
-            <p className="text-sm font-semibold text-amber-900">18g → 36g</p>
-          </div>
-          <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">Brew Time by Roast</p>
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { roast: 'Light', time: '30–35s' },
-              { roast: 'Medium', time: '25–30s' },
-              { roast: 'Dark', time: '20–25s' },
-            ].map(({ roast, time }) => (
-              <div key={roast} className="bg-white rounded-xl px-4 py-3 border border-amber-200">
-                <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">{roast}</p>
-                <p className="text-sm font-semibold text-amber-900">{time}</p>
+        <div className="bg-amber-100 rounded-2xl border border-amber-200 overflow-hidden">
+          <button
+            onClick={() => setRatiosOpen((o) => !o)}
+            className="w-full flex items-center justify-between px-5 py-4 hover:bg-amber-200/50 transition-colors"
+          >
+            <h2 className="text-base font-semibold text-amber-900">Recommended Ratios</h2>
+            <svg className={`w-5 h-5 text-amber-600 transition-transform duration-300 ${ratiosOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${ratiosOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+            <div className="overflow-hidden">
+              <div className="px-5 pb-5">
+                <div className="bg-white rounded-xl px-4 py-3 border border-amber-200 mb-3">
+                  <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Coffee → Yield</p>
+                  <p className="text-sm font-semibold text-amber-900">18g → 36g</p>
+                </div>
+                <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">Brew Time by Roast</p>
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { roast: 'Light', time: '30–35s' },
+                    { roast: 'Medium', time: '25–30s' },
+                    { roast: 'Dark', time: '20–25s' },
+                  ].map(({ roast, time }) => (
+                    <div key={roast} className="bg-white rounded-xl px-4 py-3 border border-amber-200">
+                      <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">{roast}</p>
+                      <p className="text-sm font-semibold text-amber-900">{time}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
+            </div>
           </div>
         </div>
       )}
 
       {method === 'Moccamaster' && (
-        <div className="bg-amber-100 rounded-2xl border border-amber-200 p-5">
-          <h2 className="text-base font-semibold text-amber-900 mb-3">Recommended Ratios</h2>
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { coffee: '45g', water: '720g' },
-              { coffee: '30g', water: '480g' },
-              { coffee: '20g', water: '340g' },
-            ].map(({ coffee, water }) => (
-              <div key={coffee} className="bg-white rounded-xl px-4 py-3 border border-amber-200">
-                <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Coffee → Water</p>
-                <p className="text-sm font-semibold text-amber-900">{coffee} → {water}</p>
+        <div className="bg-amber-100 rounded-2xl border border-amber-200 overflow-hidden">
+          <button
+            onClick={() => setRatiosOpen((o) => !o)}
+            className="w-full flex items-center justify-between px-5 py-4 hover:bg-amber-200/50 transition-colors"
+          >
+            <h2 className="text-base font-semibold text-amber-900">Recommended Ratios</h2>
+            <svg className={`w-5 h-5 text-amber-600 transition-transform duration-300 ${ratiosOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${ratiosOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+            <div className="overflow-hidden">
+              <div className="px-5 pb-5">
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { coffee: '45g', water: '720g' },
+                    { coffee: '30g', water: '480g' },
+                    { coffee: '20g', water: '340g' },
+                  ].map(({ coffee, water }) => (
+                    <div key={coffee} className="bg-white rounded-xl px-4 py-3 border border-amber-200">
+                      <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Coffee → Water</p>
+                      <p className="text-sm font-semibold text-amber-900">{coffee} → {water}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
+            </div>
           </div>
         </div>
       )}
 
-      <div className="bg-white rounded-2xl shadow-sm border border-amber-100 p-5">
-        <h2 className="text-lg font-semibold text-amber-900 mb-4">New {method} Brew</h2>
+      <div className="bg-white rounded-2xl shadow-sm border border-amber-100 overflow-hidden">
+        <button
+          onClick={() => setFormOpen((o) => !o)}
+          className="w-full flex items-center justify-between px-5 py-4 hover:bg-amber-50 transition-colors"
+        >
+          <h2 className="text-lg font-semibold text-amber-900">New {method} Brew</h2>
+          <svg
+            className={`w-5 h-5 text-amber-600 transition-transform ${formOpen ? 'rotate-180' : ''}`}
+            fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${formOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+        <div className="overflow-hidden">
+        <div className="px-5 pb-5">
         <form onSubmit={handleSubmit} className="space-y-4">
           <Field
             label="Coffee Brand / Type"
@@ -193,6 +251,9 @@ export default function CoffeeLog({ method }) {
             Save Brew
           </button>
         </form>
+        </div>
+        </div>
+        </div>
       </div>
 
       {methodEntries.length > 0 && (
