@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Scale, SlidersHorizontal, Droplets, Calendar, FileText, Star, Plus, BarChart2, Pencil, Copy, Trash2, Coffee } from 'lucide-react'
 
 const emptyForm = () => ({
   brand: '',
@@ -16,10 +17,11 @@ function formatDate(dateStr) {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-function Field({ label, id, type = 'text', value, onChange, placeholder, unit }) {
+function Field({ label, id, type = 'text', value, onChange, placeholder, unit, icon: Icon }) {
   return (
     <div>
-      <label htmlFor={id} className="block text-xs font-bold text-amber-500 uppercase tracking-wider mb-1.5">
+      <label htmlFor={id} className="flex items-center gap-1.5 text-xs font-bold text-amber-500 uppercase tracking-wider mb-1.5">
+        {Icon && <Icon className="w-3.5 h-3.5" />}
         {label}
       </label>
       <div className="relative">
@@ -82,14 +84,15 @@ function SectionLabel({ children }) {
   )
 }
 
-function CollapsibleCard({ title, open, onToggle, accent, children }) {
+function CollapsibleCard({ title, open, onToggle, accent, icon: Icon, children }) {
   return (
     <div className={`rounded-xl overflow-hidden bg-stone-800 border border-stone-700 ${accent ? 'border-l-4 border-l-amber-500' : ''}`}>
       <button
         onClick={onToggle}
         className="w-full flex items-center justify-between px-5 py-4 hover:bg-stone-700/50 transition-colors"
       >
-        <h2 className={`font-bold uppercase tracking-wider ${accent ? 'text-xs text-amber-500' : 'text-sm text-amber-50'}`}>
+        <h2 className={`flex items-center gap-2 font-bold uppercase tracking-wider ${accent ? 'text-xs text-amber-500' : 'text-sm text-amber-50'}`}>
+          {Icon && <Icon className="w-4 h-4" />}
           {title}
         </h2>
         <Chevron open={open} />
@@ -220,7 +223,7 @@ export default function CoffeeLog({ method }) {
   return (
     <div className="space-y-4">
       {method === 'V60' && (
-        <CollapsibleCard title="Recommended Ratios" open={ratiosOpen} onToggle={() => setRatiosOpen((o) => !o)} accent>
+        <CollapsibleCard title="Recommended Ratios" open={ratiosOpen} onToggle={() => setRatiosOpen((o) => !o)} accent icon={BarChart2}>
           <div className="grid grid-cols-2 gap-3">
             <RatioCard label="Coffee → Water" value="15g → 240–255g" />
             <RatioCard label="Coffee → Water" value="30g → 480g" />
@@ -229,7 +232,7 @@ export default function CoffeeLog({ method }) {
       )}
 
       {method === 'Espresso' && (
-        <CollapsibleCard title="Recommended Ratios" open={ratiosOpen} onToggle={() => setRatiosOpen((o) => !o)} accent>
+        <CollapsibleCard title="Recommended Ratios" open={ratiosOpen} onToggle={() => setRatiosOpen((o) => !o)} accent icon={BarChart2}>
           <RatioCard label="Coffee → Yield" value="18g → 36g" />
           <p className="text-xs font-bold text-amber-500 uppercase tracking-wider mt-4 mb-2">Brew Time by Roast</p>
           <div className="grid grid-cols-3 gap-3">
@@ -241,7 +244,7 @@ export default function CoffeeLog({ method }) {
       )}
 
       {method === 'Moccamaster' && (
-        <CollapsibleCard title="Recommended Ratios" open={ratiosOpen} onToggle={() => setRatiosOpen((o) => !o)} accent>
+        <CollapsibleCard title="Recommended Ratios" open={ratiosOpen} onToggle={() => setRatiosOpen((o) => !o)} accent icon={BarChart2}>
           <div className="grid grid-cols-3 gap-3">
             <RatioCard label="Coffee → Water" value="45g → 720g" />
             <RatioCard label="Coffee → Water" value="30g → 480g" />
@@ -254,19 +257,20 @@ export default function CoffeeLog({ method }) {
         title={editingId ? 'Edit Brew' : `New ${method} Brew`}
         open={formOpen}
         onToggle={() => { setFormOpen((o) => !o); if (editingId) cancelEdit() }}
+        icon={editingId ? Pencil : Plus}
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Date" id="date" type="date" value={form.date} onChange={set('date')} />
+            <Field label="Date" id="date" type="date" value={form.date} onChange={set('date')} icon={Calendar} />
             <div>
-              <label className="block text-xs font-bold text-amber-500 uppercase tracking-wider mb-1.5">Rating</label>
+              <label className="flex items-center gap-1.5 text-xs font-bold text-amber-500 uppercase tracking-wider mb-1.5"><Star className="w-3.5 h-3.5" />Rating</label>
               <StarRating value={form.rating} onChange={(v) => setForm((f) => ({ ...f, rating: v }))} />
             </div>
           </div>
-          <Field label="Coffee Brand / Type" id="brand" value={form.brand} onChange={set('brand')} placeholder="e.g. Onyx, Light roast Ethiopia" />
+          <Field label="Coffee Brand / Type" id="brand" value={form.brand} onChange={set('brand')} placeholder="e.g. Onyx, Light roast Ethiopia" icon={Coffee} />
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Coffee Dose" id="dose" value={form.dose} onChange={set('dose')} placeholder="20" unit="g" />
-            <Field label="Grind Size" id="grindSize" value={form.grindSize} onChange={set('grindSize')} placeholder={isEspresso ? '18 (fine)' : '25 (medium)'} />
+            <Field label="Coffee Dose" id="dose" value={form.dose} onChange={set('dose')} placeholder="20" unit="g" icon={Scale} />
+            <Field label="Grind Size" id="grindSize" value={form.grindSize} onChange={set('grindSize')} placeholder={isEspresso ? '18 (fine)' : '25 (medium)'} icon={SlidersHorizontal} />
           </div>
           <Field
             label={isEspresso ? 'Yield' : 'Water Dose'}
@@ -275,9 +279,10 @@ export default function CoffeeLog({ method }) {
             onChange={set('waterOrYield')}
             placeholder={isEspresso ? '40' : '300'}
             unit="g"
+            icon={Droplets}
           />
           <div>
-            <label htmlFor="notes" className="block text-xs font-bold text-amber-500 uppercase tracking-wider mb-1.5">Notes</label>
+            <label htmlFor="notes" className="flex items-center gap-1.5 text-xs font-bold text-amber-500 uppercase tracking-wider mb-1.5"><FileText className="w-3.5 h-3.5" />Notes</label>
             <textarea
               id="notes"
               value={form.notes}
@@ -394,9 +399,15 @@ export default function CoffeeLog({ method }) {
                         </div>
                       )}
                       <div className="flex gap-2 mt-4 pt-3 border-t border-stone-700">
-                        <button onClick={() => handleEdit(entry)} className="flex-1 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider text-amber-500 hover:text-amber-300 hover:bg-stone-700 transition-colors">Edit</button>
-                        <button onClick={() => handleDuplicate(entry)} className="flex-1 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider text-amber-500 hover:text-amber-300 hover:bg-stone-700 transition-colors">Duplicate</button>
-                        <button onClick={() => deleteEntry(entry.id)} className="flex-1 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider text-red-500 hover:text-red-400 hover:bg-stone-700 transition-colors">Delete</button>
+                        <button onClick={() => handleEdit(entry)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider text-amber-500 hover:text-amber-300 hover:bg-stone-700 transition-colors">
+                          <Pencil className="w-3.5 h-3.5" />Edit
+                        </button>
+                        <button onClick={() => handleDuplicate(entry)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider text-amber-500 hover:text-amber-300 hover:bg-stone-700 transition-colors">
+                          <Copy className="w-3.5 h-3.5" />Duplicate
+                        </button>
+                        <button onClick={() => deleteEntry(entry.id)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider text-red-500 hover:text-red-400 hover:bg-stone-700 transition-colors">
+                          <Trash2 className="w-3.5 h-3.5" />Delete
+                        </button>
                       </div>
                     </div>
                   </div>
