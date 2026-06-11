@@ -53,8 +53,8 @@ export default function CoffeeLog({ method }) {
     }
   })
   const [expandedId, setExpandedId] = useState(null)
-  const [formOpen, setFormOpen] = useState(true)
-  const [ratiosOpen, setRatiosOpen] = useState(true)
+  const [formOpen, setFormOpen] = useState(false)
+  const [ratiosOpen, setRatiosOpen] = useState(false)
 
   useEffect(() => {
     localStorage.setItem('coffee-log-entries', JSON.stringify(entries))
@@ -282,7 +282,7 @@ export default function CoffeeLog({ method }) {
                       {entry.dose}g coffee
                     </span>
                     <svg
-                      className={`w-4 h-4 text-gray-400 transition-transform ${expandedId === entry.id ? 'rotate-180' : ''}`}
+                      className={`w-4 h-4 text-gray-400 transition-transform duration-300 ${expandedId === entry.id ? 'rotate-180' : ''}`}
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -292,40 +292,42 @@ export default function CoffeeLog({ method }) {
                   </div>
                 </button>
 
-                {expandedId === entry.id && (
-                  <div className="px-4 pb-4 border-t border-amber-50">
-                    <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
-                      <div>
-                        <dt className="text-xs text-gray-400 uppercase tracking-wide">Coffee Dose</dt>
-                        <dd className="mt-0.5 font-medium text-gray-700">{entry.dose || '—'} g</dd>
-                      </div>
-                      <div>
-                        <dt className="text-xs text-gray-400 uppercase tracking-wide">Grind Size</dt>
-                        <dd className="mt-0.5 font-medium text-gray-700">{entry.grindSize || '—'}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-xs text-gray-400 uppercase tracking-wide">
-                          {isEspresso ? 'Yield' : 'Water Dose'}
-                        </dt>
-                        <dd className="mt-0.5 font-medium text-gray-700">
-                          {entry.waterOrYield || '—'} g
-                        </dd>
-                      </div>
-                    </dl>
-                    {entry.notes && (
-                      <div className="mt-3">
-                        <dt className="text-xs text-gray-400 uppercase tracking-wide">Notes</dt>
-                        <p className="mt-1 text-sm text-gray-600 whitespace-pre-wrap">{entry.notes}</p>
-                      </div>
-                    )}
-                    <button
-                      onClick={() => deleteEntry(entry.id)}
-                      className="mt-4 text-xs text-red-400 hover:text-red-600 transition-colors"
-                    >
-                      Delete entry
-                    </button>
+                <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${expandedId === entry.id ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+                  <div className="overflow-hidden">
+                    <div className="px-4 pb-4 border-t border-amber-50">
+                      <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+                        <div>
+                          <dt className="text-xs text-gray-400 uppercase tracking-wide">Coffee Dose</dt>
+                          <dd className="mt-0.5 font-medium text-gray-700">{entry.dose || '—'} g</dd>
+                        </div>
+                        <div>
+                          <dt className="text-xs text-gray-400 uppercase tracking-wide">Grind Size</dt>
+                          <dd className="mt-0.5 font-medium text-gray-700">{entry.grindSize || '—'}</dd>
+                        </div>
+                        <div>
+                          <dt className="text-xs text-gray-400 uppercase tracking-wide">
+                            {isEspresso ? 'Yield' : 'Water Dose'}
+                          </dt>
+                          <dd className="mt-0.5 font-medium text-gray-700">
+                            {entry.waterOrYield || '—'} g
+                          </dd>
+                        </div>
+                      </dl>
+                      {entry.notes && (
+                        <div className="mt-3">
+                          <dt className="text-xs text-gray-400 uppercase tracking-wide">Notes</dt>
+                          <p className="mt-1 text-sm text-gray-600 whitespace-pre-wrap">{entry.notes}</p>
+                        </div>
+                      )}
+                      <button
+                        onClick={() => deleteEntry(entry.id)}
+                        className="mt-4 text-xs text-red-400 hover:text-red-600 transition-colors"
+                      >
+                        Delete entry
+                      </button>
+                    </div>
                   </div>
-                )}
+                </div>
               </div>
             ))}
           </div>

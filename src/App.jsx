@@ -35,7 +35,7 @@ function App() {
 
       <footer className="bg-amber-900 text-amber-50 py-6 px-4 text-center shadow-inner">
         <p className="text-5xl">☕</p>
-        <p className="text-amber-200 text-sm mt-1">Version 1.0.0</p>
+        <p className="text-amber-200 text-sm mt-1">Version 1.0.1</p>
       </footer>
     </div>
   )
