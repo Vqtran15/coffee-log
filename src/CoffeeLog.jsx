@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 const EMPTY_FORM = {
   brand: '',
@@ -45,8 +45,18 @@ function Field({ label, id, type = 'text', value, onChange, placeholder, unit })
 
 export default function CoffeeLog({ method }) {
   const [form, setForm] = useState(EMPTY_FORM)
-  const [entries, setEntries] = useState([])
+  const [entries, setEntries] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('coffee-log-entries')) ?? []
+    } catch {
+      return []
+    }
+  })
   const [expandedId, setExpandedId] = useState(null)
+
+  useEffect(() => {
+    localStorage.setItem('coffee-log-entries', JSON.stringify(entries))
+  }, [entries])
 
   const isEspresso = method === 'Espresso'
 
