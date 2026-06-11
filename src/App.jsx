@@ -34,13 +34,13 @@ function App() {
             <button
               key={tab.method}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-4 rounded-full text-sm font-bold uppercase tracking-wide transition-all duration-200 ${
+              className={`flex-1 py-2.5 rounded-full text-xs font-bold uppercase tracking-wide transition-all duration-200 ${
                 activeTab.method === tab.method
                   ? 'bg-amber-500 text-stone-900'
                   : 'text-stone-400 hover:text-amber-50 bg-stone-800'
               }`}
             >
-              <tab.icon className="w-4 h-4 mx-auto mb-0.5" />
+              <tab.icon className="w-3.5 h-3.5 mx-auto mb-0.5" />
               {tab.label}
             </button>
           ))}

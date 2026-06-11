@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Scale, SlidersHorizontal, Droplets, Calendar, FileText, Star, Plus, BarChart2, Pencil, Copy, Trash2, Coffee } from 'lucide-react'
+import { Scale, SlidersHorizontal, Droplets, Calendar, FileText, Star, Plus, BarChart2, Pencil, Copy, Trash2, Coffee, Bean } from 'lucide-react'
 
 const emptyForm = () => ({
   brand: '',
@@ -108,6 +108,114 @@ function CollapsibleCard({ title, open, onToggle, accent, icon: Icon, children }
   )
 }
 
+function DeleteModal({ entry, onConfirm, onCancel }) {
+  const [isClosing, setIsClosing] = useState(false)
+  function close() { setIsClosing(true); setTimeout(onCancel, 150) }
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center px-4">
+      <div className={`absolute inset-0 bg-black/70 backdrop-blur-md ${isClosing ? 'backdrop-exit' : 'backdrop-enter'}`} onClick={close} />
+      <div className={`relative bg-stone-800 border border-stone-700 rounded-2xl p-6 w-full max-w-sm shadow-xl ${isClosing ? 'modal-exit' : 'modal-enter'}`}>
+        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-red-500/10 border border-red-500/30 mx-auto mb-4">
+          <Trash2 className="w-5 h-5 text-red-500" />
+        </div>
+        <h3 className="text-amber-50 font-bold text-center text-base uppercase tracking-wider mb-1">Delete Brew?</h3>
+        <p className="text-stone-400 text-sm text-center mb-6">
+          <span className="text-amber-300 font-semibold">{entry.brand || 'Unnamed brew'}</span> will be permanently removed.
+        </p>
+        <div className="flex gap-3">
+          <button
+            onClick={close}
+            className="flex-1 py-3 rounded-full text-sm font-bold uppercase tracking-wide text-stone-300 bg-stone-700 hover:bg-stone-600 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 py-3 rounded-full text-sm font-bold uppercase tracking-wide text-white bg-red-600 hover:bg-red-500 transition-colors"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function BrewFormModal({ title, form, setForm, onSubmit, onCancel, isEspresso, editingId }) {
+  const [isClosing, setIsClosing] = useState(false)
+  function close() { setIsClosing(true); setTimeout(onCancel, 150) }
+  function set(field) {
+    return (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
+  }
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center px-4">
+      <div className={`absolute inset-0 bg-black/70 backdrop-blur-md ${isClosing ? 'backdrop-exit' : 'backdrop-enter'}`} onClick={close} />
+      <div className={`relative bg-stone-800 border border-stone-700 rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto shadow-xl ${isClosing ? 'modal-exit' : 'modal-enter'}`}>
+        <div className="sticky top-0 bg-stone-800 border-b border-stone-700 px-5 py-4 flex items-center justify-between rounded-t-2xl">
+          <h2 className="flex items-center gap-2 text-sm font-bold text-amber-50 uppercase tracking-wider">
+            {editingId ? <Pencil className="w-4 h-4 text-amber-500" /> : <Copy className="w-4 h-4 text-amber-500" />}
+            {title}
+          </h2>
+          <button onClick={close} className="text-stone-500 hover:text-stone-300 transition-colors">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <form onSubmit={onSubmit} className="p-5 space-y-4" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Date" id="modal-date" type="date" value={form.date} onChange={set('date')} icon={Calendar} />
+            <div>
+              <label className="flex items-center gap-1.5 text-xs font-bold text-amber-500 uppercase tracking-wider mb-1.5"><Star className="w-3.5 h-3.5" />Rating</label>
+              <StarRating value={form.rating} onChange={(v) => setForm((f) => ({ ...f, rating: v }))} />
+            </div>
+          </div>
+          <Field label="Coffee Brand / Type" id="modal-brand" value={form.brand} onChange={set('brand')} placeholder="e.g. Onyx, Light roast Ethiopia" icon={Coffee} />
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Coffee Dose" id="modal-dose" value={form.dose} onChange={set('dose')} placeholder="20" unit="g" icon={Scale} />
+            <Field label="Grind Size" id="modal-grindSize" value={form.grindSize} onChange={set('grindSize')} placeholder={isEspresso ? '18 (fine)' : '25 (medium)'} icon={SlidersHorizontal} />
+          </div>
+          <Field
+            label={isEspresso ? 'Yield' : 'Water Dose'}
+            id="modal-waterOrYield"
+            value={form.waterOrYield}
+            onChange={set('waterOrYield')}
+            placeholder={isEspresso ? '40' : '300'}
+            unit="g"
+            icon={Droplets}
+          />
+          <div>
+            <label htmlFor="modal-notes" className="flex items-center gap-1.5 text-xs font-bold text-amber-500 uppercase tracking-wider mb-1.5"><FileText className="w-3.5 h-3.5" />Notes</label>
+            <textarea
+              id="modal-notes"
+              value={form.notes}
+              onChange={set('notes')}
+              placeholder="Tasting notes, adjustments, observations..."
+              rows={3}
+              className="w-full rounded-md border border-stone-600 bg-stone-700 px-3 py-2 text-sm text-amber-50 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition resize-none"
+            />
+          </div>
+          <div className="flex gap-2 pb-2">
+            <button
+              type="submit"
+              className="flex-1 bg-amber-500 text-stone-900 py-3 rounded-full font-bold text-sm uppercase tracking-wider hover:bg-amber-400 transition-colors"
+            >
+              {editingId ? 'Update Brew' : 'Save Brew'}
+            </button>
+            <button
+              type="button"
+              onClick={close}
+              className="px-5 py-3 rounded-full text-sm font-bold uppercase tracking-wider text-stone-400 border border-stone-600 hover:bg-stone-700 transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
 function RatioCard({ label, value }) {
   return (
     <div className="bg-stone-900 rounded-lg px-4 py-3 border border-stone-700">
@@ -137,6 +245,11 @@ export default function CoffeeLog({ method }) {
   const [formOpen, setFormOpen] = useState(false)
   const [ratiosOpen, setRatiosOpen] = useState(false)
   const [editingId, setEditingId] = useState(null)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null)
+  const [deletingId, setDeletingId] = useState(null)
+  const [recentlyAddedId, setRecentlyAddedId] = useState(null)
+  const [recentlyUpdatedId, setRecentlyUpdatedId] = useState(null)
   const [sortBy, setSortBy] = useState('date-desc')
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -156,13 +269,24 @@ export default function CoffeeLog({ method }) {
       setEntries((prev) =>
         prev.map((entry) => (entry.id === editingId ? { ...entry, ...form, method } : entry))
       )
+      setExpandedId(editingId)
+      setRecentlyUpdatedId(editingId)
+      setTimeout(() => setRecentlyUpdatedId(null), 750)
       setEditingId(null)
+      setModalOpen(false)
       setFormOpen(false)
     } else {
       const newId = Date.now()
       setEntries((prev) => [{ ...form, id: newId, method }, ...prev])
       setFormOpen(false)
+      setModalOpen(false)
       setExpandedId(newId)
+      setRecentlyAddedId(newId)
+      setTimeout(() => {
+        setRecentlyAddedId(null)
+        setRecentlyUpdatedId(newId)
+        setTimeout(() => setRecentlyUpdatedId(null), 750)
+      }, 350)
     }
     setForm(emptyForm())
   }
@@ -178,8 +302,7 @@ export default function CoffeeLog({ method }) {
       rating: entry.rating || 0,
     })
     setEditingId(entry.id)
-    setFormOpen(true)
-    setExpandedId(null)
+    setModalOpen(true)
   }
 
   function handleDuplicate(entry) {
@@ -193,19 +316,29 @@ export default function CoffeeLog({ method }) {
       rating: 0,
     })
     setEditingId(null)
-    setFormOpen(true)
+    setModalOpen(true)
     setExpandedId(null)
   }
 
   function cancelEdit() {
     setForm(emptyForm())
     setEditingId(null)
+    setModalOpen(false)
   }
 
   function deleteEntry(id) {
     setEntries((prev) => prev.filter((e) => e.id !== id))
     if (expandedId === id) setExpandedId(null)
     if (editingId === id) cancelEdit()
+  }
+
+  function startDelete(id) {
+    setDeleteConfirmId(null)
+    setDeletingId(id)
+    setTimeout(() => {
+      deleteEntry(id)
+      setDeletingId(null)
+    }, 220)
   }
 
   const allMethodEntries = entries.filter((e) => e.method === method)
@@ -346,7 +479,7 @@ export default function CoffeeLog({ method }) {
 
           <div className="space-y-2">
             {methodEntries.map((entry) => (
-              <div key={entry.id} className="bg-stone-800 rounded-xl border border-stone-700 overflow-hidden">
+              <div key={entry.id} className={`bg-stone-800 rounded-xl border border-stone-700 overflow-hidden ${recentlyAddedId === entry.id ? 'entry-enter' : ''} ${deletingId === entry.id ? 'entry-exit' : ''} ${recentlyUpdatedId === entry.id ? 'entry-flash' : ''}`}>
                 <button
                   className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-stone-700/50 transition-colors"
                   onClick={() => setExpandedId(expandedId === entry.id ? null : entry.id)}
@@ -357,8 +490,8 @@ export default function CoffeeLog({ method }) {
                   </div>
                   <div className="flex items-center gap-2">
                     {entry.rating > 0 && <StarRating value={entry.rating} onChange={() => {}} readonly size="sm" />}
-                    <span className="text-xs text-amber-500 font-bold bg-stone-700 px-2 py-0.5 rounded">
-                      {entry.dose}g
+                    <span className="flex items-center gap-1 text-xs text-amber-500 font-bold bg-stone-700 px-2 py-0.5 rounded">
+                      <Bean className="w-3 h-3" />{entry.dose}g
                     </span>
                     <svg
                       className={`w-4 h-4 text-stone-500 transition-transform duration-300 ${expandedId === entry.id ? 'rotate-180' : ''}`}
@@ -405,7 +538,7 @@ export default function CoffeeLog({ method }) {
                         <button onClick={() => handleDuplicate(entry)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider text-amber-500 hover:text-amber-300 hover:bg-stone-700 transition-colors">
                           <Copy className="w-3.5 h-3.5" />Duplicate
                         </button>
-                        <button onClick={() => deleteEntry(entry.id)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider text-red-500 hover:text-red-400 hover:bg-stone-700 transition-colors">
+                        <button onClick={() => setDeleteConfirmId(entry.id)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider text-red-500 hover:text-red-400 hover:bg-stone-700 transition-colors">
                           <Trash2 className="w-3.5 h-3.5" />Delete
                         </button>
                       </div>
@@ -423,6 +556,26 @@ export default function CoffeeLog({ method }) {
           <p className="text-4xl mb-3">☕</p>
           <p className="text-xs uppercase tracking-[0.25em]">No {method} brews logged yet</p>
         </div>
+      )}
+
+      {modalOpen && (
+        <BrewFormModal
+          title={editingId ? 'Edit Brew' : 'Duplicate Brew'}
+          form={form}
+          setForm={setForm}
+          onSubmit={handleSubmit}
+          onCancel={cancelEdit}
+          isEspresso={isEspresso}
+          editingId={editingId}
+        />
+      )}
+
+      {deleteConfirmId && (
+        <DeleteModal
+          entry={entries.find((e) => e.id === deleteConfirmId)}
+          onConfirm={() => startDelete(deleteConfirmId)}
+          onCancel={() => setDeleteConfirmId(null)}
+        />
       )}
     </div>
   )

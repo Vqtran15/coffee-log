@@ -25,3 +25,48 @@ body {
 .tab-enter {
   animation: tabFadeIn 0.2s ease-out;
 }
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes modalOut {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.93); }
+}
+
+@keyframes backdropIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes backdropOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+.modal-enter { animation: modalIn 0.2s ease-out forwards; }
+.modal-exit  { animation: modalOut 0.15s ease-in forwards; }
+.backdrop-enter { animation: backdropIn 0.2s ease-out forwards; }
+.backdrop-exit  { animation: backdropOut 0.15s ease-in forwards; }
+
+@keyframes entryIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes entryOut {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.97); }
+}
+
+@keyframes entryFlash {
+  0%        { box-shadow: none; }
+  30%       { box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.8), 0 0 16px rgba(245, 158, 11, 0.3); }
+  100%      { box-shadow: none; }
+}
+
+.entry-enter { animation: entryIn 0.3s ease-out forwards; }
+.entry-exit  { animation: entryOut 0.2s ease-in forwards; pointer-events: none; }
+.entry-flash { animation: entryFlash 0.7s ease-out forwards; }
