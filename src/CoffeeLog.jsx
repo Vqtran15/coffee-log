@@ -1,27 +1,25 @@
 import { useState, useEffect } from 'react'
 
-const EMPTY_FORM = {
+const emptyForm = () => ({
   brand: '',
   dose: '',
   grindSize: '',
   waterOrYield: '',
   notes: '',
-}
+  date: new Date().toISOString().split('T')[0],
+  rating: 0,
+})
 
-function formatDate(iso) {
-  return new Date(iso).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+function formatDate(dateStr) {
+  if (!dateStr) return ''
+  const d = dateStr.includes('T') ? new Date(dateStr) : new Date(dateStr + 'T00:00:00')
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 function Field({ label, id, type = 'text', value, onChange, placeholder, unit }) {
   return (
     <div>
-      <label htmlFor={id} className="block text-sm font-medium text-amber-900 mb-1">
+      <label htmlFor={id} className="block text-xs font-bold text-amber-500 uppercase tracking-wider mb-1.5">
         {label}
       </label>
       <div className="relative">
@@ -31,10 +29,10 @@ function Field({ label, id, type = 'text', value, onChange, placeholder, unit })
           value={value}
           onChange={onChange}
           placeholder={placeholder}
-          className="w-full rounded-lg border border-amber-200 bg-white px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition"
+          className="w-full rounded-md border border-stone-600 bg-stone-700 px-3 py-2 text-sm text-amber-50 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition"
         />
         {unit && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-stone-500 pointer-events-none">
             {unit}
           </span>
         )}
@@ -43,8 +41,88 @@ function Field({ label, id, type = 'text', value, onChange, placeholder, unit })
   )
 }
 
+function StarRating({ value, onChange, readonly = false, size = 'md' }) {
+  const sizeClass = size === 'sm' ? 'text-sm' : 'text-xl'
+  return (
+    <div className="flex gap-0.5">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <button
+          key={star}
+          type="button"
+          disabled={readonly}
+          onClick={() => !readonly && onChange(star === value ? 0 : star)}
+          className={`${sizeClass} leading-none transition-colors ${readonly ? 'cursor-default' : 'cursor-pointer'} ${
+            star <= value ? 'text-amber-500' : readonly ? 'text-stone-700' : 'text-stone-600 hover:text-amber-400'
+          }`}
+        >
+          ★
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function Chevron({ open }) {
+  return (
+    <svg
+      className={`w-4 h-4 text-stone-500 transition-transform duration-300 ${open ? 'rotate-180' : ''}`}
+      fill="none" viewBox="0 0 24 24" stroke="currentColor"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+    </svg>
+  )
+}
+
+function SectionLabel({ children }) {
+  return (
+    <div className="flex items-center gap-3 mb-4">
+      <span className="text-xs font-bold text-amber-500 uppercase tracking-[0.25em]">{children}</span>
+      <div className="flex-1 h-px bg-stone-700" />
+    </div>
+  )
+}
+
+function CollapsibleCard({ title, open, onToggle, accent, children }) {
+  return (
+    <div className={`rounded-xl overflow-hidden bg-stone-800 border border-stone-700 ${accent ? 'border-l-4 border-l-amber-500' : ''}`}>
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-between px-5 py-4 hover:bg-stone-700/50 transition-colors"
+      >
+        <h2 className={`font-bold uppercase tracking-wider ${accent ? 'text-xs text-amber-500' : 'text-sm text-amber-50'}`}>
+          {title}
+        </h2>
+        <Chevron open={open} />
+      </button>
+      <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+        <div className="overflow-hidden">
+          <div className="px-5 pb-5">
+            {children}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function RatioCard({ label, value }) {
+  return (
+    <div className="bg-stone-900 rounded-lg px-4 py-3 border border-stone-700">
+      <p className="text-xs text-stone-500 uppercase tracking-wider mb-1">{label}</p>
+      <p className="text-sm font-bold text-amber-50">{value}</p>
+    </div>
+  )
+}
+
+const SORT_OPTIONS = [
+  { value: 'date-desc', label: 'Newest' },
+  { value: 'date-asc', label: 'Oldest' },
+  { value: 'brand', label: 'Brand A–Z' },
+  { value: 'rating', label: 'Top Rated' },
+]
+
 export default function CoffeeLog({ method }) {
-  const [form, setForm] = useState(EMPTY_FORM)
+  const [form, setForm] = useState(emptyForm)
   const [entries, setEntries] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem('coffee-log-entries')) ?? []
@@ -55,6 +133,9 @@ export default function CoffeeLog({ method }) {
   const [expandedId, setExpandedId] = useState(null)
   const [formOpen, setFormOpen] = useState(false)
   const [ratiosOpen, setRatiosOpen] = useState(false)
+  const [editingId, setEditingId] = useState(null)
+  const [sortBy, setSortBy] = useState('date-desc')
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     localStorage.setItem('coffee-log-entries', JSON.stringify(entries))
@@ -68,160 +149,124 @@ export default function CoffeeLog({ method }) {
 
   function handleSubmit(e) {
     e.preventDefault()
-    const entry = { ...form, id: Date.now(), method, createdAt: new Date().toISOString() }
-    setEntries((prev) => [entry, ...prev])
-    setForm(EMPTY_FORM)
+    if (editingId) {
+      setEntries((prev) =>
+        prev.map((entry) => (entry.id === editingId ? { ...entry, ...form, method } : entry))
+      )
+      setEditingId(null)
+      setFormOpen(false)
+    } else {
+      const newId = Date.now()
+      setEntries((prev) => [{ ...form, id: newId, method }, ...prev])
+      setFormOpen(false)
+      setExpandedId(newId)
+    }
+    setForm(emptyForm())
+  }
+
+  function handleEdit(entry) {
+    setForm({
+      brand: entry.brand || '',
+      dose: entry.dose || '',
+      grindSize: entry.grindSize || '',
+      waterOrYield: entry.waterOrYield || '',
+      notes: entry.notes || '',
+      date: entry.date || new Date().toISOString().split('T')[0],
+      rating: entry.rating || 0,
+    })
+    setEditingId(entry.id)
+    setFormOpen(true)
+    setExpandedId(null)
+  }
+
+  function handleDuplicate(entry) {
+    setForm({
+      brand: entry.brand || '',
+      dose: entry.dose || '',
+      grindSize: entry.grindSize || '',
+      waterOrYield: entry.waterOrYield || '',
+      notes: entry.notes || '',
+      date: new Date().toISOString().split('T')[0],
+      rating: 0,
+    })
+    setEditingId(null)
+    setFormOpen(true)
+    setExpandedId(null)
+  }
+
+  function cancelEdit() {
+    setForm(emptyForm())
+    setEditingId(null)
   }
 
   function deleteEntry(id) {
     setEntries((prev) => prev.filter((e) => e.id !== id))
     if (expandedId === id) setExpandedId(null)
+    if (editingId === id) cancelEdit()
   }
 
-  const methodEntries = entries.filter((e) => e.method === method)
+  const allMethodEntries = entries.filter((e) => e.method === method)
+
+  const methodEntries = allMethodEntries
+    .filter((e) => !searchQuery || (e.brand || '').toLowerCase().includes(searchQuery.toLowerCase()))
+    .sort((a, b) => {
+      if (sortBy === 'date-desc') return new Date(b.date || b.createdAt || 0) - new Date(a.date || a.createdAt || 0)
+      if (sortBy === 'date-asc') return new Date(a.date || a.createdAt || 0) - new Date(b.date || b.createdAt || 0)
+      if (sortBy === 'brand') return (a.brand || '').localeCompare(b.brand || '')
+      if (sortBy === 'rating') return (b.rating || 0) - (a.rating || 0)
+      return 0
+    })
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {method === 'V60' && (
-        <div className="bg-amber-100 rounded-2xl border border-amber-200 overflow-hidden">
-          <button
-            onClick={() => setRatiosOpen((o) => !o)}
-            className="w-full flex items-center justify-between px-5 py-4 hover:bg-amber-200/50 transition-colors"
-          >
-            <h2 className="text-base font-semibold text-amber-900">Recommended Ratios</h2>
-            <svg className={`w-5 h-5 text-amber-600 transition-transform duration-300 ${ratiosOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-          <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${ratiosOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
-            <div className="overflow-hidden">
-              <div className="px-5 pb-5">
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { coffee: '15g', water: '240–255g' },
-                    { coffee: '30g', water: '480g' },
-                  ].map(({ coffee, water }) => (
-                    <div key={coffee} className="bg-white rounded-xl px-4 py-3 border border-amber-200">
-                      <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Coffee → Water</p>
-                      <p className="text-sm font-semibold text-amber-900">{coffee} → {water}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+        <CollapsibleCard title="Recommended Ratios" open={ratiosOpen} onToggle={() => setRatiosOpen((o) => !o)} accent>
+          <div className="grid grid-cols-2 gap-3">
+            <RatioCard label="Coffee → Water" value="15g → 240–255g" />
+            <RatioCard label="Coffee → Water" value="30g → 480g" />
           </div>
-        </div>
+        </CollapsibleCard>
       )}
 
       {method === 'Espresso' && (
-        <div className="bg-amber-100 rounded-2xl border border-amber-200 overflow-hidden">
-          <button
-            onClick={() => setRatiosOpen((o) => !o)}
-            className="w-full flex items-center justify-between px-5 py-4 hover:bg-amber-200/50 transition-colors"
-          >
-            <h2 className="text-base font-semibold text-amber-900">Recommended Ratios</h2>
-            <svg className={`w-5 h-5 text-amber-600 transition-transform duration-300 ${ratiosOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-          <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${ratiosOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
-            <div className="overflow-hidden">
-              <div className="px-5 pb-5">
-                <div className="bg-white rounded-xl px-4 py-3 border border-amber-200 mb-3">
-                  <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Coffee → Yield</p>
-                  <p className="text-sm font-semibold text-amber-900">18g → 36g</p>
-                </div>
-                <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">Brew Time by Roast</p>
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    { roast: 'Light', time: '30–35s' },
-                    { roast: 'Medium', time: '25–30s' },
-                    { roast: 'Dark', time: '20–25s' },
-                  ].map(({ roast, time }) => (
-                    <div key={roast} className="bg-white rounded-xl px-4 py-3 border border-amber-200">
-                      <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">{roast}</p>
-                      <p className="text-sm font-semibold text-amber-900">{time}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+        <CollapsibleCard title="Recommended Ratios" open={ratiosOpen} onToggle={() => setRatiosOpen((o) => !o)} accent>
+          <RatioCard label="Coffee → Yield" value="18g → 36g" />
+          <p className="text-xs font-bold text-amber-500 uppercase tracking-wider mt-4 mb-2">Brew Time by Roast</p>
+          <div className="grid grid-cols-3 gap-3">
+            <RatioCard label="Light" value="30–35s" />
+            <RatioCard label="Medium" value="25–30s" />
+            <RatioCard label="Dark" value="20–25s" />
           </div>
-        </div>
+        </CollapsibleCard>
       )}
 
       {method === 'Moccamaster' && (
-        <div className="bg-amber-100 rounded-2xl border border-amber-200 overflow-hidden">
-          <button
-            onClick={() => setRatiosOpen((o) => !o)}
-            className="w-full flex items-center justify-between px-5 py-4 hover:bg-amber-200/50 transition-colors"
-          >
-            <h2 className="text-base font-semibold text-amber-900">Recommended Ratios</h2>
-            <svg className={`w-5 h-5 text-amber-600 transition-transform duration-300 ${ratiosOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-          <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${ratiosOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
-            <div className="overflow-hidden">
-              <div className="px-5 pb-5">
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    { coffee: '45g', water: '720g' },
-                    { coffee: '30g', water: '480g' },
-                    { coffee: '20g', water: '340g' },
-                  ].map(({ coffee, water }) => (
-                    <div key={coffee} className="bg-white rounded-xl px-4 py-3 border border-amber-200">
-                      <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Coffee → Water</p>
-                      <p className="text-sm font-semibold text-amber-900">{coffee} → {water}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+        <CollapsibleCard title="Recommended Ratios" open={ratiosOpen} onToggle={() => setRatiosOpen((o) => !o)} accent>
+          <div className="grid grid-cols-3 gap-3">
+            <RatioCard label="Coffee → Water" value="45g → 720g" />
+            <RatioCard label="Coffee → Water" value="30g → 480g" />
+            <RatioCard label="Coffee → Water" value="20g → 340g" />
           </div>
-        </div>
+        </CollapsibleCard>
       )}
 
-      <div className="bg-white rounded-2xl shadow-sm border border-amber-100 overflow-hidden">
-        <button
-          onClick={() => setFormOpen((o) => !o)}
-          className="w-full flex items-center justify-between px-5 py-4 hover:bg-amber-50 transition-colors"
-        >
-          <h2 className="text-lg font-semibold text-amber-900">New {method} Brew</h2>
-          <svg
-            className={`w-5 h-5 text-amber-600 transition-transform ${formOpen ? 'rotate-180' : ''}`}
-            fill="none" viewBox="0 0 24 24" stroke="currentColor"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-        <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${formOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
-        <div className="overflow-hidden">
-        <div className="px-5 pb-5">
+      <CollapsibleCard
+        title={editingId ? 'Edit Brew' : `New ${method} Brew`}
+        open={formOpen}
+        onToggle={() => { setFormOpen((o) => !o); if (editingId) cancelEdit() }}
+      >
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Field
-            label="Coffee Brand / Type"
-            id="brand"
-            value={form.brand}
-            onChange={set('brand')}
-            placeholder="e.g. Onyx, Light roast Ethiopia"
-          />
           <div className="grid grid-cols-2 gap-4">
-            <Field
-              label="Coffee Dose"
-              id="dose"
-              value={form.dose}
-              onChange={set('dose')}
-              placeholder="20"
-              unit="g"
-            />
-            <Field
-              label="Grind Size"
-              id="grindSize"
-              value={form.grindSize}
-              onChange={set('grindSize')}
-              placeholder={isEspresso ? '18" (fine)" ' : '25 (medium)'}
-            />
+            <Field label="Date" id="date" type="date" value={form.date} onChange={set('date')} />
+            <div>
+              <label className="block text-xs font-bold text-amber-500 uppercase tracking-wider mb-1.5">Rating</label>
+              <StarRating value={form.rating} onChange={(v) => setForm((f) => ({ ...f, rating: v }))} />
+            </div>
+          </div>
+          <Field label="Coffee Brand / Type" id="brand" value={form.brand} onChange={set('brand')} placeholder="e.g. Onyx, Light roast Ethiopia" />
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Coffee Dose" id="dose" value={form.dose} onChange={set('dose')} placeholder="20" unit="g" />
+            <Field label="Grind Size" id="grindSize" value={form.grindSize} onChange={set('grindSize')} placeholder={isEspresso ? '18 (fine)' : '25 (medium)'} />
           </div>
           <Field
             label={isEspresso ? 'Yield' : 'Water Dose'}
@@ -232,60 +277,82 @@ export default function CoffeeLog({ method }) {
             unit="g"
           />
           <div>
-            <label htmlFor="notes" className="block text-sm font-medium text-amber-900 mb-1">
-              Notes
-            </label>
+            <label htmlFor="notes" className="block text-xs font-bold text-amber-500 uppercase tracking-wider mb-1.5">Notes</label>
             <textarea
               id="notes"
               value={form.notes}
               onChange={set('notes')}
               placeholder="Tasting notes, adjustments, observations..."
               rows={3}
-              className="w-full rounded-lg border border-amber-200 bg-white px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition resize-none"
+              className="w-full rounded-md border border-stone-600 bg-stone-700 px-3 py-2 text-sm text-amber-50 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition resize-none"
             />
           </div>
-          <button
-            type="submit"
-            className="w-full bg-amber-900 text-amber-50 py-2.5 rounded-lg font-semibold text-sm hover:bg-amber-800 active:bg-amber-950 transition-colors"
-          >
-            Save Brew
-          </button>
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              className="flex-1 bg-amber-500 text-stone-900 py-2.5 rounded-md font-bold text-sm uppercase tracking-wider hover:bg-amber-400 active:bg-amber-600 transition-colors"
+            >
+              {editingId ? 'Update Brew' : 'Save Brew'}
+            </button>
+            {editingId && (
+              <button
+                type="button"
+                onClick={cancelEdit}
+                className="px-4 py-2.5 rounded-md text-sm font-bold uppercase tracking-wider text-stone-400 border border-stone-600 hover:bg-stone-700 transition-colors"
+              >
+                Cancel
+              </button>
+            )}
+          </div>
         </form>
-        </div>
-        </div>
-        </div>
-      </div>
+      </CollapsibleCard>
 
-      {methodEntries.length > 0 && (
+      {allMethodEntries.length > 0 && (
         <div>
-          <h2 className="text-base font-semibold text-amber-900 mb-3">
-            {method} History ({methodEntries.length})
-          </h2>
+          <SectionLabel>{method} History ({allMethodEntries.length})</SectionLabel>
+
+          <div className="flex gap-2 mb-3">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by brand..."
+              className="flex-1 rounded-md border border-stone-600 bg-stone-800 px-3 py-2 text-sm text-amber-50 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition"
+            />
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="rounded-md border border-stone-600 bg-stone-800 px-3 py-2 text-sm text-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-500 transition"
+            >
+              {SORT_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+          </div>
+
+          {methodEntries.length === 0 && (
+            <p className="text-center text-sm text-stone-500 py-4">No brews match your search.</p>
+          )}
+
           <div className="space-y-2">
             {methodEntries.map((entry) => (
-              <div
-                key={entry.id}
-                className="bg-white rounded-xl border border-amber-100 shadow-sm overflow-hidden"
-              >
+              <div key={entry.id} className="bg-stone-800 rounded-xl border border-stone-700 overflow-hidden">
                 <button
-                  className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-amber-50 transition-colors"
+                  className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-stone-700/50 transition-colors"
                   onClick={() => setExpandedId(expandedId === entry.id ? null : entry.id)}
                 >
                   <div>
-                    <p className="font-medium text-gray-800 text-sm">
-                      {entry.brand || 'Unnamed brew'}
-                    </p>
-                    <p className="text-xs text-gray-400 mt-0.5">{formatDate(entry.createdAt)}</p>
+                    <p className="font-bold text-amber-50 text-sm">{entry.brand || 'Unnamed brew'}</p>
+                    <p className="text-xs text-stone-500 mt-0.5 uppercase tracking-wide">{formatDate(entry.date || entry.createdAt)}</p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs text-amber-700 font-medium bg-amber-100 px-2 py-0.5 rounded-full">
-                      {entry.dose}g coffee
+                  <div className="flex items-center gap-2">
+                    {entry.rating > 0 && <StarRating value={entry.rating} onChange={() => {}} readonly size="sm" />}
+                    <span className="text-xs text-amber-500 font-bold bg-stone-700 px-2 py-0.5 rounded">
+                      {entry.dose}g
                     </span>
                     <svg
-                      className={`w-4 h-4 text-gray-400 transition-transform duration-300 ${expandedId === entry.id ? 'rotate-180' : ''}`}
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
+                      className={`w-4 h-4 text-stone-500 transition-transform duration-300 ${expandedId === entry.id ? 'rotate-180' : ''}`}
+                      fill="none" viewBox="0 0 24 24" stroke="currentColor"
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
@@ -294,37 +361,38 @@ export default function CoffeeLog({ method }) {
 
                 <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${expandedId === entry.id ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
                   <div className="overflow-hidden">
-                    <div className="px-4 pb-4 border-t border-amber-50">
-                      <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+                    <div className="px-4 pb-4 border-t border-stone-700">
+                      <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3">
                         <div>
-                          <dt className="text-xs text-gray-400 uppercase tracking-wide">Coffee Dose</dt>
-                          <dd className="mt-0.5 font-medium text-gray-700">{entry.dose || '—'} g</dd>
+                          <dt className="text-xs text-stone-500 uppercase tracking-wider">Coffee Dose</dt>
+                          <dd className="mt-0.5 text-sm font-semibold text-amber-50">{entry.dose || '—'} g</dd>
                         </div>
                         <div>
-                          <dt className="text-xs text-gray-400 uppercase tracking-wide">Grind Size</dt>
-                          <dd className="mt-0.5 font-medium text-gray-700">{entry.grindSize || '—'}</dd>
+                          <dt className="text-xs text-stone-500 uppercase tracking-wider">Grind Size</dt>
+                          <dd className="mt-0.5 text-sm font-semibold text-amber-50">{entry.grindSize || '—'}</dd>
                         </div>
                         <div>
-                          <dt className="text-xs text-gray-400 uppercase tracking-wide">
-                            {isEspresso ? 'Yield' : 'Water Dose'}
-                          </dt>
-                          <dd className="mt-0.5 font-medium text-gray-700">
-                            {entry.waterOrYield || '—'} g
-                          </dd>
+                          <dt className="text-xs text-stone-500 uppercase tracking-wider">{isEspresso ? 'Yield' : 'Water Dose'}</dt>
+                          <dd className="mt-0.5 text-sm font-semibold text-amber-50">{entry.waterOrYield || '—'} g</dd>
                         </div>
+                        {entry.rating > 0 && (
+                          <div>
+                            <dt className="text-xs text-stone-500 uppercase tracking-wider">Rating</dt>
+                            <dd className="mt-1"><StarRating value={entry.rating} onChange={() => {}} readonly /></dd>
+                          </div>
+                        )}
                       </dl>
                       {entry.notes && (
                         <div className="mt-3">
-                          <dt className="text-xs text-gray-400 uppercase tracking-wide">Notes</dt>
-                          <p className="mt-1 text-sm text-gray-600 whitespace-pre-wrap">{entry.notes}</p>
+                          <p className="text-xs text-stone-500 uppercase tracking-wider">Notes</p>
+                          <p className="mt-1 text-sm text-stone-300 whitespace-pre-wrap">{entry.notes}</p>
                         </div>
                       )}
-                      <button
-                        onClick={() => deleteEntry(entry.id)}
-                        className="mt-4 text-xs text-red-400 hover:text-red-600 transition-colors"
-                      >
-                        Delete entry
-                      </button>
+                      <div className="flex gap-4 mt-4 pt-3 border-t border-stone-700">
+                        <button onClick={() => handleEdit(entry)} className="text-xs font-bold uppercase tracking-wider text-amber-500 hover:text-amber-300 transition-colors">Edit</button>
+                        <button onClick={() => handleDuplicate(entry)} className="text-xs font-bold uppercase tracking-wider text-amber-500 hover:text-amber-300 transition-colors">Duplicate</button>
+                        <button onClick={() => deleteEntry(entry.id)} className="text-xs font-bold uppercase tracking-wider text-red-500 hover:text-red-400 transition-colors ml-auto">Delete</button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -334,10 +402,10 @@ export default function CoffeeLog({ method }) {
         </div>
       )}
 
-      {methodEntries.length === 0 && (
-        <div className="text-center py-10 text-gray-400">
-          <p className="text-4xl mb-2">☕</p>
-          <p className="text-sm">No {method} brews logged yet.</p>
+      {allMethodEntries.length === 0 && (
+        <div className="text-center py-12 text-stone-600">
+          <p className="text-4xl mb-3">☕</p>
+          <p className="text-xs uppercase tracking-[0.25em]">No {method} brews logged yet</p>
         </div>
       )}
     </div>
