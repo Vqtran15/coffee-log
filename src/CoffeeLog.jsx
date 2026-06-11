@@ -256,7 +256,7 @@ export default function CoffeeLog({ method }) {
         onToggle={() => { setFormOpen((o) => !o); if (editingId) cancelEdit() }}
       >
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Date" id="date" type="date" value={form.date} onChange={set('date')} />
             <div>
               <label className="block text-xs font-bold text-amber-500 uppercase tracking-wider mb-1.5">Rating</label>
@@ -319,15 +319,20 @@ export default function CoffeeLog({ method }) {
               placeholder="Search by brand..."
               className="flex-1 rounded-md border border-stone-600 bg-stone-800 px-3 py-2 text-sm text-amber-50 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition"
             />
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="rounded-md border border-stone-600 bg-stone-800 px-3 py-2 text-sm text-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-500 transition"
-            >
-              {SORT_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>{o.label}</option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="appearance-none rounded-md border border-stone-600 bg-stone-800 pl-3 pr-8 py-2 text-sm text-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-500 transition"
+              >
+                {SORT_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+              <svg className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
           </div>
 
           {methodEntries.length === 0 && (
@@ -388,10 +393,10 @@ export default function CoffeeLog({ method }) {
                           <p className="mt-1 text-sm text-stone-300 whitespace-pre-wrap">{entry.notes}</p>
                         </div>
                       )}
-                      <div className="flex gap-4 mt-4 pt-3 border-t border-stone-700">
-                        <button onClick={() => handleEdit(entry)} className="text-xs font-bold uppercase tracking-wider text-amber-500 hover:text-amber-300 transition-colors">Edit</button>
-                        <button onClick={() => handleDuplicate(entry)} className="text-xs font-bold uppercase tracking-wider text-amber-500 hover:text-amber-300 transition-colors">Duplicate</button>
-                        <button onClick={() => deleteEntry(entry.id)} className="text-xs font-bold uppercase tracking-wider text-red-500 hover:text-red-400 transition-colors ml-auto">Delete</button>
+                      <div className="flex gap-2 mt-4 pt-3 border-t border-stone-700">
+                        <button onClick={() => handleEdit(entry)} className="flex-1 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider text-amber-500 hover:text-amber-300 hover:bg-stone-700 transition-colors">Edit</button>
+                        <button onClick={() => handleDuplicate(entry)} className="flex-1 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider text-amber-500 hover:text-amber-300 hover:bg-stone-700 transition-colors">Duplicate</button>
+                        <button onClick={() => deleteEntry(entry.id)} className="flex-1 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider text-red-500 hover:text-red-400 hover:bg-stone-700 transition-colors">Delete</button>
                       </div>
                     </div>
                   </div>

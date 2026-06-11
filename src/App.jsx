@@ -7,7 +7,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('V60')
 
   return (
-    <div className="min-h-screen bg-stone-950 pb-20">
+    <div className="min-h-screen bg-stone-950 pb-32">
       <header className="bg-stone-900 text-amber-50 px-6 pt-8 pb-0">
         <div className="max-w-2xl mx-auto">
           <p className="text-amber-500 text-xs tracking-[0.35em] uppercase mb-2">Your daily brew journal</p>
@@ -26,7 +26,7 @@ function App() {
         </div>
       </div>
 
-<nav className="fixed bottom-0 left-0 right-0 bg-stone-900 border-t border-stone-700 z-50">
+      <nav className="fixed bottom-0 left-0 right-0 bg-stone-900 border-t border-stone-700 z-50" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         <div className="max-w-2xl mx-auto flex gap-2 px-4 py-3">
           {TABS.map((tab) => (
             <button
