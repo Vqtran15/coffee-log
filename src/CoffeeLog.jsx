@@ -447,7 +447,7 @@ export default function CoffeeLog({ method }) {
 
       {allMethodEntries.length > 0 && (
         <div>
-          <SectionLabel>{method} History ({allMethodEntries.length})</SectionLabel>
+          <SectionLabel>{method} Log</SectionLabel>
 
           <div className="flex gap-2 mb-3">
             <input
@@ -554,7 +554,7 @@ export default function CoffeeLog({ method }) {
       {allMethodEntries.length === 0 && (
         <div className="text-center py-12 text-stone-600">
           <p className="text-4xl mb-3">☕</p>
-          <p className="text-xs uppercase tracking-[0.25em]">No {method} brews logged yet</p>
+          <p className="text-xs uppercase tracking-[0.25em]">No {method} brews in the log yet</p>
         </div>
       )}
 
