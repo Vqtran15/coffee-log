@@ -1,5 +1,34 @@
 import { useState, useEffect } from 'react'
 import { Scale, SlidersHorizontal, Droplets, Calendar, FileText, Star, Plus, BarChart2, Pencil, Copy, Trash2, Coffee, Bean } from 'lucide-react'
+import { supabase } from './supabase'
+
+function toEntry(row) {
+  return {
+    id: row.id,
+    method: row.method,
+    brand: row.brand ?? '',
+    dose: row.dose ?? '',
+    grindSize: row.grind_size ?? '',
+    waterOrYield: row.water_or_yield ?? '',
+    notes: row.notes ?? '',
+    date: row.date ?? '',
+    rating: row.rating ?? 0,
+    createdAt: row.created_at,
+  }
+}
+
+function toRow(form, method) {
+  return {
+    method,
+    brand: form.brand,
+    dose: form.dose,
+    grind_size: form.grindSize,
+    water_or_yield: form.waterOrYield,
+    notes: form.notes,
+    date: form.date || null,
+    rating: form.rating,
+  }
+}
 
 const emptyForm = () => ({
   brand: '',
@@ -141,7 +170,7 @@ function DeleteModal({ entry, onConfirm, onCancel }) {
   )
 }
 
-function BrewFormModal({ title, form, setForm, onSubmit, onCancel, isEspresso, editingId }) {
+function BrewFormModal({ title, form, setForm, onSubmit, onCancel, isEspresso, editingId, isSaving }) {
   const [isClosing, setIsClosing] = useState(false)
   function close() { setIsClosing(true); setTimeout(onCancel, 150) }
   function set(field) {
@@ -199,9 +228,10 @@ function BrewFormModal({ title, form, setForm, onSubmit, onCancel, isEspresso, e
           <div className="flex gap-2 pb-2">
             <button
               type="submit"
-              className="flex-1 bg-amber-500 text-stone-900 py-3 rounded-full font-bold text-sm uppercase tracking-wider hover:bg-amber-400 transition-colors"
+              disabled={isSaving}
+              className="flex-1 bg-amber-500 text-stone-900 py-3 rounded-full font-bold text-sm uppercase tracking-wider hover:bg-amber-400 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {editingId ? 'Update Brew' : 'Save Brew'}
+              {isSaving ? 'Saving…' : editingId ? 'Update Brew' : 'Save Brew'}
             </button>
             <button
               type="button"
@@ -235,13 +265,9 @@ const SORT_OPTIONS = [
 
 export default function CoffeeLog({ method }) {
   const [form, setForm] = useState(emptyForm)
-  const [entries, setEntries] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('coffee-log-entries')) ?? []
-    } catch {
-      return []
-    }
-  })
+  const [entries, setEntries] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
   const [expandedId, setExpandedId] = useState(null)
   const [formOpen, setFormOpen] = useState(false)
   const [ratiosOpen, setRatiosOpen] = useState(false)
@@ -255,8 +281,12 @@ export default function CoffeeLog({ method }) {
   const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
-    localStorage.setItem('coffee-log-entries', JSON.stringify(entries))
-  }, [entries])
+    supabase.from('brews').select('*').order('created_at', { ascending: false }).then(({ data, error }) => {
+      if (error) console.error('Failed to load brews:', error)
+      else setEntries((data ?? []).map(toEntry))
+      setLoading(false)
+    })
+  }, [])
 
   const isEspresso = method === 'Espresso'
 
@@ -264,32 +294,43 @@ export default function CoffeeLog({ method }) {
     return (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
-    if (editingId) {
-      setEntries((prev) =>
-        prev.map((entry) => (entry.id === editingId ? { ...entry, ...form, method } : entry))
-      )
-      setExpandedId(editingId)
-      setRecentlyUpdatedId(editingId)
-      setTimeout(() => setRecentlyUpdatedId(null), 750)
-      setEditingId(null)
-      setModalOpen(false)
-      setFormOpen(false)
-    } else {
-      const newId = Date.now()
-      setEntries((prev) => [{ ...form, id: newId, method }, ...prev])
-      setFormOpen(false)
-      setModalOpen(false)
-      setExpandedId(newId)
-      setRecentlyAddedId(newId)
-      setTimeout(() => {
-        setRecentlyAddedId(null)
-        setRecentlyUpdatedId(newId)
+    setIsSaving(true)
+    try {
+      if (editingId) {
+        const { error } = await supabase.from('brews').update(toRow(form, method)).eq('id', editingId)
+        if (error) throw error
+        setEntries((prev) =>
+          prev.map((entry) => (entry.id === editingId ? { ...entry, ...form, method } : entry))
+        )
+        setExpandedId(editingId)
+        setRecentlyUpdatedId(editingId)
         setTimeout(() => setRecentlyUpdatedId(null), 750)
-      }, 350)
+        setEditingId(null)
+        setModalOpen(false)
+        setFormOpen(false)
+      } else {
+        const { data, error } = await supabase.from('brews').insert(toRow(form, method)).select().single()
+        if (error) throw error
+        const newEntry = toEntry(data)
+        setEntries((prev) => [newEntry, ...prev])
+        setFormOpen(false)
+        setModalOpen(false)
+        setExpandedId(newEntry.id)
+        setRecentlyAddedId(newEntry.id)
+        setTimeout(() => {
+          setRecentlyAddedId(null)
+          setRecentlyUpdatedId(newEntry.id)
+          setTimeout(() => setRecentlyUpdatedId(null), 750)
+        }, 350)
+      }
+      setForm(emptyForm())
+    } catch (err) {
+      console.error('Failed to save brew:', err)
+    } finally {
+      setIsSaving(false)
     }
-    setForm(emptyForm())
   }
 
   function handleEdit(entry) {
@@ -327,7 +368,9 @@ export default function CoffeeLog({ method }) {
     setModalOpen(false)
   }
 
-  function deleteEntry(id) {
+  async function deleteEntry(id) {
+    const { error } = await supabase.from('brews').delete().eq('id', id)
+    if (error) { console.error('Failed to delete brew:', error); return }
     setEntries((prev) => prev.filter((e) => e.id !== id))
     if (expandedId === id) setExpandedId(null)
     if (editingId === id) cancelEdit()
@@ -430,9 +473,10 @@ export default function CoffeeLog({ method }) {
           <div className="flex gap-2">
             <button
               type="submit"
-              className="flex-1 bg-amber-500 text-stone-900 py-2.5 rounded-md font-bold text-sm uppercase tracking-wider hover:bg-amber-400 active:bg-amber-600 transition-colors"
+              disabled={isSaving}
+              className="flex-1 bg-amber-500 text-stone-900 py-2.5 rounded-md font-bold text-sm uppercase tracking-wider hover:bg-amber-400 active:bg-amber-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {editingId ? 'Update Brew' : 'Save Brew'}
+              {isSaving ? 'Saving…' : editingId ? 'Update Brew' : 'Save Brew'}
             </button>
             {editingId && (
               <button
@@ -553,7 +597,13 @@ export default function CoffeeLog({ method }) {
         </div>
       )}
 
-      {allMethodEntries.length === 0 && (
+      {loading && (
+        <div className="text-center py-12 text-stone-600">
+          <p className="text-xs uppercase tracking-[0.25em] animate-pulse">Loading brews…</p>
+        </div>
+      )}
+
+      {!loading && allMethodEntries.length === 0 && (
         <div className="text-center py-12 text-stone-600">
           <p className="text-4xl mb-3">☕</p>
           <p className="text-xs uppercase tracking-[0.25em]">No {method} brews in the log yet</p>
@@ -569,6 +619,7 @@ export default function CoffeeLog({ method }) {
           onCancel={cancelEdit}
           isEspresso={isEspresso}
           editingId={editingId}
+          isSaving={isSaving}
         />
       )}
 
