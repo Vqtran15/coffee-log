@@ -163,14 +163,16 @@ function BrewFormModal({ title, form, setForm, onSubmit, onCancel, isEspresso, e
           </button>
         </div>
         <form onSubmit={onSubmit} className="p-5 space-y-4" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+          <Field label="Coffee Brand / Type" id="modal-brand" value={form.brand} onChange={set('brand')} placeholder="e.g. Onyx, Light roast Ethiopia" icon={Coffee} />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Date" id="modal-date" type="date" value={form.date} onChange={set('date')} icon={Calendar} />
-            <div>
+            <div className="flex flex-col">
               <label className="flex items-center gap-1.5 text-xs font-bold text-amber-500 uppercase tracking-wider mb-1.5"><Star className="w-3.5 h-3.5" />Rating</label>
-              <StarRating value={form.rating} onChange={(v) => setForm((f) => ({ ...f, rating: v }))} />
+              <div className="flex-1 flex items-center">
+                <StarRating value={form.rating} onChange={(v) => setForm((f) => ({ ...f, rating: v }))} />
+              </div>
             </div>
           </div>
-          <Field label="Coffee Brand / Type" id="modal-brand" value={form.brand} onChange={set('brand')} placeholder="e.g. Onyx, Light roast Ethiopia" icon={Coffee} />
           <div className="grid grid-cols-2 gap-4">
             <Field label="Coffee Dose" id="modal-dose" value={form.dose} onChange={set('dose')} placeholder="20" unit="g" icon={Scale} />
             <Field label="Grind Size" id="modal-grindSize" value={form.grindSize} onChange={set('grindSize')} placeholder={isEspresso ? '18 (fine)' : '25 (medium)'} icon={SlidersHorizontal} />
@@ -181,7 +183,6 @@ function BrewFormModal({ title, form, setForm, onSubmit, onCancel, isEspresso, e
             value={form.waterOrYield}
             onChange={set('waterOrYield')}
             placeholder={isEspresso ? '40' : '300'}
-            unit="g"
             icon={Droplets}
           />
           <div>
@@ -393,16 +394,18 @@ export default function CoffeeLog({ method }) {
         icon={editingId ? Pencil : Plus}
       >
         <form onSubmit={handleSubmit} className="space-y-4">
+          <Field label="Coffee Brand / Type" id="brand" value={form.brand} onChange={set('brand')} placeholder="e.g. Onyx, Light roast Ethiopia" icon={Coffee} />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Date" id="date" type="date" value={form.date} onChange={set('date')} icon={Calendar} />
-            <div>
+            <div className="flex flex-col">
               <label className="flex items-center gap-1.5 text-xs font-bold text-amber-500 uppercase tracking-wider mb-1.5"><Star className="w-3.5 h-3.5" />Rating</label>
-              <StarRating value={form.rating} onChange={(v) => setForm((f) => ({ ...f, rating: v }))} />
+              <div className="flex-1 flex items-center">
+                <StarRating value={form.rating} onChange={(v) => setForm((f) => ({ ...f, rating: v }))} />
+              </div>
             </div>
           </div>
-          <Field label="Coffee Brand / Type" id="brand" value={form.brand} onChange={set('brand')} placeholder="e.g. Onyx, Light roast Ethiopia" icon={Coffee} />
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Coffee Dose" id="dose" value={form.dose} onChange={set('dose')} placeholder="20" unit="g" icon={Scale} />
+            <Field label="Coffee Dose" id="dose" value={form.dose} onChange={set('dose')} placeholder="20" icon={Scale} />
             <Field label="Grind Size" id="grindSize" value={form.grindSize} onChange={set('grindSize')} placeholder={isEspresso ? '18 (fine)' : '25 (medium)'} icon={SlidersHorizontal} />
           </div>
           <Field
@@ -411,7 +414,6 @@ export default function CoffeeLog({ method }) {
             value={form.waterOrYield}
             onChange={set('waterOrYield')}
             placeholder={isEspresso ? '40' : '300'}
-            unit="g"
             icon={Droplets}
           />
           <div>
@@ -491,7 +493,7 @@ export default function CoffeeLog({ method }) {
                   <div className="flex items-center gap-2">
                     {entry.rating > 0 && <StarRating value={entry.rating} onChange={() => {}} readonly size="sm" />}
                     <span className="flex items-center gap-1 text-xs text-amber-500 font-bold bg-stone-700 px-2 py-0.5 rounded">
-                      <Bean className="w-3 h-3" />{entry.dose}g
+                      <Bean className="w-3 h-3" />{entry.dose}
                     </span>
                     <svg
                       className={`w-4 h-4 text-stone-500 transition-transform duration-300 ${expandedId === entry.id ? 'rotate-180' : ''}`}
@@ -508,7 +510,7 @@ export default function CoffeeLog({ method }) {
                       <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3">
                         <div>
                           <dt className="text-xs text-stone-500 uppercase tracking-wider">Coffee Dose</dt>
-                          <dd className="mt-0.5 text-sm font-semibold text-amber-50">{entry.dose || '—'} g</dd>
+                          <dd className="mt-0.5 text-sm font-semibold text-amber-50">{entry.dose || '—'}</dd>
                         </div>
                         <div>
                           <dt className="text-xs text-stone-500 uppercase tracking-wider">Grind Size</dt>
@@ -516,7 +518,7 @@ export default function CoffeeLog({ method }) {
                         </div>
                         <div>
                           <dt className="text-xs text-stone-500 uppercase tracking-wider">{isEspresso ? 'Yield' : 'Water Dose'}</dt>
-                          <dd className="mt-0.5 text-sm font-semibold text-amber-50">{entry.waterOrYield || '—'} g</dd>
+                          <dd className="mt-0.5 text-sm font-semibold text-amber-50">{entry.waterOrYield || '—'}</dd>
                         </div>
                         {entry.rating > 0 && (
                           <div>
