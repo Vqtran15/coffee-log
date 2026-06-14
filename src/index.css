@@ -70,3 +70,22 @@ body {
 .entry-enter { animation: entryIn 0.3s ease-out forwards; }
 .entry-exit  { animation: entryOut 0.2s ease-in forwards; pointer-events: none; }
 .entry-flash { animation: entryFlash 0.7s ease-out forwards; }
+
+@keyframes logEntryIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.log-entry-in {
+  animation: logEntryIn 0.35s ease-out both;
+}
+
+@keyframes fabIn {
+  0%   { opacity: 0; transform: scale(0.4); }
+  70%  { transform: scale(1.12); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.fab-enter {
+  animation: fabIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}

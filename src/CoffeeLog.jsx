@@ -215,7 +215,7 @@ function DeleteModal({ entry, onConfirm, onCancel }) {
   )
 }
 
-function BrewFormModal({ title, form, setForm, onSubmit, onCancel, isEspresso, editingId, isSaving }) {
+function BrewFormModal({ title, form, setForm, onSubmit, onCancel, isEspresso, editingId, isSaving, isDuplicate }) {
   const [isClosing, setIsClosing] = useState(false)
   function close() { setIsClosing(true); setTimeout(onCancel, 150) }
   function set(field) {
@@ -227,7 +227,7 @@ function BrewFormModal({ title, form, setForm, onSubmit, onCancel, isEspresso, e
       <div className={`relative bg-stone-800 border border-stone-700 rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto shadow-xl ${isClosing ? 'modal-exit' : 'modal-enter'}`}>
         <div className="sticky top-0 bg-stone-800 border-b border-stone-700 px-5 py-4 flex items-center justify-between rounded-t-2xl">
           <h2 className="flex items-center gap-2 text-sm font-bold text-amber-50 uppercase tracking-wider">
-            {editingId ? <Pencil className="w-4 h-4 text-amber-500" /> : <Copy className="w-4 h-4 text-amber-500" />}
+            {editingId ? <Pencil className="w-4 h-4 text-amber-500" /> : isDuplicate ? <Copy className="w-4 h-4 text-amber-500" /> : <Plus className="w-4 h-4 text-amber-500" />}
             {title}
           </h2>
           <button onClick={close} className="text-stone-500 hover:text-stone-300 transition-colors">
@@ -312,11 +312,12 @@ export default function CoffeeLog({ method }) {
   const [form, setForm] = useState(emptyForm)
   const [entries, setEntries] = useState([])
   const [loading, setLoading] = useState(true)
+  const [animatingInitial, setAnimatingInitial] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [expandedId, setExpandedId] = useState(null)
-  const [formOpen, setFormOpen] = useState(false)
   const [ratiosOpen, setRatiosOpen] = useState(false)
   const [editingId, setEditingId] = useState(null)
+  const [isDuplicate, setIsDuplicate] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
   const [deleteConfirmId, setDeleteConfirmId] = useState(null)
   const [deletingId, setDeletingId] = useState(null)
@@ -335,6 +336,8 @@ export default function CoffeeLog({ method }) {
       if (error) console.error('Failed to load brews:', error)
       else setEntries((data ?? []).map(toEntry))
       setLoading(false)
+      setAnimatingInitial(true)
+      setTimeout(() => setAnimatingInitial(false), 1500)
     })
   }, [])
 
@@ -358,13 +361,11 @@ export default function CoffeeLog({ method }) {
         setTimeout(() => setRecentlyUpdatedId(null), 750)
         setEditingId(null)
         setModalOpen(false)
-        setFormOpen(false)
       } else {
         const { data, error } = await supabase.from('brews').insert(toRow(form, method)).select().single()
         if (error) throw error
         const newEntry = toEntry(data)
         setEntries((prev) => [newEntry, ...prev])
-        setFormOpen(false)
         setModalOpen(false)
         setExpandedId(newEntry.id)
         setRecentlyAddedId(newEntry.id)
@@ -412,6 +413,7 @@ export default function CoffeeLog({ method }) {
       rating: 0,
     })
     setEditingId(null)
+    setIsDuplicate(true)
     setModalOpen(true)
     setExpandedId(null)
   }
@@ -419,6 +421,7 @@ export default function CoffeeLog({ method }) {
   function cancelEdit() {
     setForm(emptyForm())
     setEditingId(null)
+    setIsDuplicate(false)
     setModalOpen(false)
   }
 
@@ -452,7 +455,8 @@ export default function CoffeeLog({ method }) {
     })
 
   return (
-    <div className="space-y-4">
+    <>
+    <div className="tab-enter space-y-4">
       {method === 'V60' && (
         <CollapsibleCard title="Recommended Ratios" open={ratiosOpen} onToggle={() => setRatiosOpen((o) => !o)} accent icon={BarChart2}>
           <div className="grid grid-cols-2 gap-3">
@@ -483,67 +487,6 @@ export default function CoffeeLog({ method }) {
           </div>
         </CollapsibleCard>
       )}
-
-      <CollapsibleCard
-        title={editingId ? 'Edit Brew' : `New ${method} Brew`}
-        open={formOpen}
-        onToggle={() => { setFormOpen((o) => !o); if (editingId) cancelEdit() }}
-        icon={editingId ? Pencil : Plus}
-      >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Field label="Coffee Brand / Type" id="brand" value={form.brand} onChange={set('brand')} placeholder="e.g. Onyx, Light roast Ethiopia" icon={Coffee} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Date" id="date" type="date" value={form.date} onChange={set('date')} icon={Calendar} />
-            <div className="flex flex-col">
-              <label className="flex items-center gap-1.5 text-xs font-bold text-amber-500 uppercase tracking-wider mb-1.5"><Star className="w-3.5 h-3.5" />Rating</label>
-              <div className="flex-1 flex items-center">
-                <StarRating value={form.rating} onChange={(v) => setForm((f) => ({ ...f, rating: v }))} />
-              </div>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Coffee Dose" id="dose" value={form.dose} onChange={set('dose')} placeholder="20" icon={Scale} />
-            <Field label="Grind Size" id="grindSize" value={form.grindSize} onChange={set('grindSize')} placeholder={isEspresso ? '18 (fine)' : '25 (medium)'} icon={SlidersHorizontal} />
-          </div>
-          <Field
-            label={isEspresso ? 'Yield' : 'Water Dose'}
-            id="waterOrYield"
-            value={form.waterOrYield}
-            onChange={set('waterOrYield')}
-            placeholder={isEspresso ? '40' : '300'}
-            icon={Droplets}
-          />
-          <div>
-            <label htmlFor="notes" className="flex items-center gap-1.5 text-xs font-bold text-amber-500 uppercase tracking-wider mb-1.5"><FileText className="w-3.5 h-3.5" />Notes</label>
-            <textarea
-              id="notes"
-              value={form.notes}
-              onChange={set('notes')}
-              placeholder="Tasting notes, adjustments, observations..."
-              rows={3}
-              className="w-full rounded-md border border-stone-600 bg-stone-700 px-3 py-2 text-sm text-amber-50 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition resize-none"
-            />
-          </div>
-          <div className="flex gap-2">
-            <button
-              type="submit"
-              disabled={isSaving}
-              className="flex-1 bg-amber-500 text-stone-900 py-2.5 rounded-md font-bold text-sm uppercase tracking-wider hover:bg-amber-400 active:bg-amber-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {isSaving ? 'Saving…' : editingId ? 'Update Brew' : 'Save Brew'}
-            </button>
-            {editingId && (
-              <button
-                type="button"
-                onClick={cancelEdit}
-                className="px-4 py-2.5 rounded-md text-sm font-bold uppercase tracking-wider text-stone-400 border border-stone-600 hover:bg-stone-700 transition-colors"
-              >
-                Cancel
-              </button>
-            )}
-          </div>
-        </form>
-      </CollapsibleCard>
 
       {allMethodEntries.length > 0 && (
         <div>
@@ -578,8 +521,12 @@ export default function CoffeeLog({ method }) {
           )}
 
           <div className="space-y-2">
-            {methodEntries.map((entry) => (
-              <div key={entry.id} className={`bg-stone-800 rounded-xl border border-stone-700 overflow-hidden ${recentlyAddedId === entry.id ? 'entry-enter' : ''} ${deletingId === entry.id ? 'entry-exit' : ''} ${recentlyUpdatedId === entry.id ? 'entry-flash' : ''}`}>
+            {methodEntries.map((entry, index) => (
+              <div
+                key={entry.id}
+                className={`bg-stone-800 rounded-xl border border-stone-700 overflow-hidden ${recentlyAddedId === entry.id ? 'entry-enter' : ''} ${deletingId === entry.id ? 'entry-exit' : ''} ${recentlyUpdatedId === entry.id ? 'entry-flash' : ''} ${animatingInitial ? 'log-entry-in' : ''}`}
+                style={animatingInitial ? { animationDelay: `${index * 50}ms` } : {}}
+              >
                 <button
                   className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-stone-700/50 transition-colors"
                   onClick={() => setExpandedId(expandedId === entry.id ? null : entry.id)}
@@ -663,10 +610,24 @@ export default function CoffeeLog({ method }) {
           <p className="text-xs uppercase tracking-[0.25em]">No {method} brews in the log yet</p>
         </div>
       )}
+    </div>
+
+      <div
+        className="fixed right-5 z-[55]"
+        style={{ bottom: 'calc(env(safe-area-inset-bottom) + 100px)' }}
+      >
+        <button
+          onClick={() => { setForm(emptyForm()); setEditingId(null); setIsDuplicate(false); setModalOpen(true) }}
+          className="fab-enter w-14 h-14 rounded-full bg-amber-500 text-stone-900 shadow-lg shadow-amber-500/30 flex items-center justify-center hover:bg-amber-400 active:scale-95 transition-all"
+          aria-label="New brew"
+        >
+          <Plus className="w-6 h-6" />
+        </button>
+      </div>
 
       {modalOpen && (
         <BrewFormModal
-          title={editingId ? 'Edit Brew' : 'Duplicate Brew'}
+          title={editingId ? 'Edit Brew' : isDuplicate ? 'Duplicate Brew' : 'New Brew'}
           form={form}
           setForm={setForm}
           onSubmit={handleSubmit}
@@ -674,6 +635,7 @@ export default function CoffeeLog({ method }) {
           isEspresso={isEspresso}
           editingId={editingId}
           isSaving={isSaving}
+          isDuplicate={isDuplicate}
         />
       )}
 
@@ -691,6 +653,6 @@ export default function CoffeeLog({ method }) {
           onCancel={() => setPasswordCallback(null)}
         />
       )}
-    </div>
+    </>
   )
 }

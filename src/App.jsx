@@ -23,7 +23,7 @@ function App() {
       </header>
 
       <div className="max-w-2xl mx-auto px-4 py-6">
-        <div key={activeTab.method} className="tab-enter">
+        <div key={activeTab.method}>
           <CoffeeLog method={activeTab.method} />
         </div>
       </div>
