@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Scale, SlidersHorizontal, Droplets, Calendar, FileText, Star, Plus, BarChart2, Pencil, Copy, Trash2, Coffee, Bean, Lock } from 'lucide-react'
-
-const PASS = '7809'
+import { Scale, SlidersHorizontal, Droplets, Calendar, FileText, Star, Plus, BarChart2, Pencil, Copy, Trash2, Coffee, Bean } from 'lucide-react'
 import { supabase } from './supabase'
 
 function toEntry(row) {
@@ -134,49 +132,6 @@ function CollapsibleCard({ title, open, onToggle, accent, icon: Icon, children }
             {children}
           </div>
         </div>
-      </div>
-    </div>
-  )
-}
-
-function PasswordModal({ onConfirm, onCancel }) {
-  const [isClosing, setIsClosing] = useState(false)
-  const [value, setValue] = useState('')
-  const [error, setError] = useState(false)
-  function close() { setIsClosing(true); setTimeout(onCancel, 150) }
-  function handleSubmit(e) {
-    e.preventDefault()
-    if (value === PASS) { onConfirm() }
-    else { setError(true); setValue('') }
-  }
-  return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center px-4">
-      <div className={`absolute inset-0 bg-black/70 backdrop-blur-md ${isClosing ? 'backdrop-exit' : 'backdrop-enter'}`} onClick={close} />
-      <div className={`relative bg-stone-800 border border-stone-700 rounded-2xl p-6 w-full max-w-sm shadow-xl ${isClosing ? 'modal-exit' : 'modal-enter'}`}>
-        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-amber-500/10 border border-amber-500/30 mx-auto mb-4">
-          <Lock className="w-5 h-5 text-amber-500" />
-        </div>
-        <h3 className="text-amber-50 font-bold text-center text-base uppercase tracking-wider mb-1">Enter Password</h3>
-        <p className="text-stone-400 text-sm text-center mb-5">This action requires a password.</p>
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <input
-            type="password"
-            value={value}
-            onChange={(e) => { setValue(e.target.value); setError(false) }}
-            placeholder="Password"
-            autoFocus
-            className={`w-full rounded-md border ${error ? 'border-red-500' : 'border-stone-600'} bg-stone-700 px-3 py-2.5 text-sm text-amber-50 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition text-center tracking-widest`}
-          />
-          {error && <p className="text-red-400 text-xs text-center">Incorrect password</p>}
-          <div className="flex gap-3 pt-1">
-            <button type="button" onClick={close} className="flex-1 py-3 rounded-full text-sm font-bold uppercase tracking-wide text-stone-300 bg-stone-700 hover:bg-stone-600 transition-colors">
-              Cancel
-            </button>
-            <button type="submit" className="flex-1 py-3 rounded-full text-sm font-bold uppercase tracking-wide text-stone-900 bg-amber-500 hover:bg-amber-400 transition-colors">
-              Confirm
-            </button>
-          </div>
-        </form>
       </div>
     </div>
   )
@@ -325,12 +280,6 @@ export default function CoffeeLog({ method }) {
   const [recentlyUpdatedId, setRecentlyUpdatedId] = useState(null)
   const [sortBy, setSortBy] = useState('date-desc')
   const [searchQuery, setSearchQuery] = useState('')
-  const [passwordCallback, setPasswordCallback] = useState(null)
-
-  function withPassword(fn) {
-    setPasswordCallback(() => fn)
-  }
-
   useEffect(() => {
     supabase.from('brews').select('*').order('created_at', { ascending: false }).then(({ data, error }) => {
       if (error) console.error('Failed to load brews:', error)
@@ -385,7 +334,7 @@ export default function CoffeeLog({ method }) {
 
   function handleSubmit(e) {
     e.preventDefault()
-    withPassword(doSave)
+    doSave()
   }
 
   function handleEdit(entry) {
@@ -585,7 +534,7 @@ export default function CoffeeLog({ method }) {
                         <button onClick={() => handleDuplicate(entry)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider text-amber-500 hover:text-amber-300 hover:bg-stone-700 transition-colors">
                           <Copy className="w-3.5 h-3.5" />Duplicate
                         </button>
-                        <button onClick={() => withPassword(() => setDeleteConfirmId(entry.id))} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider text-red-500 hover:text-red-400 hover:bg-stone-700 transition-colors">
+                        <button onClick={() => setDeleteConfirmId(entry.id)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider text-red-500 hover:text-red-400 hover:bg-stone-700 transition-colors">
                           <Trash2 className="w-3.5 h-3.5" />Delete
                         </button>
                       </div>
@@ -647,12 +596,6 @@ export default function CoffeeLog({ method }) {
         />
       )}
 
-      {passwordCallback && (
-        <PasswordModal
-          onConfirm={() => { const fn = passwordCallback; setPasswordCallback(null); fn() }}
-          onCancel={() => setPasswordCallback(null)}
-        />
-      )}
     </>
   )
 }

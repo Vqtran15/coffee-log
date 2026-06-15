@@ -18,7 +18,7 @@ function App() {
           <p className="text-amber-500 text-xs tracking-[0.35em] uppercase mb-2">Cool Beans</p>
           <h1 className="text-5xl font-black tracking-tight uppercase">Coffee Log</h1>
           <div className="mt-5 h-1 bg-stone-700" />
-          <p className="text-stone-600 text-xs tracking-[0.2em] uppercase mt-3 pb-5">Version 1.0.3</p>
+          <p className="text-stone-600 text-xs tracking-[0.2em] uppercase mt-3 pb-5">Version 1.0.4</p>
         </div>
       </header>
 
