@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Scale, SlidersHorizontal, Droplets, Calendar, FileText, Star, Plus, BarChart2, Pencil, Copy, Trash2, Coffee, Bean } from 'lucide-react'
+import { Scale, SlidersHorizontal, Droplets, Calendar, FileText, Star, Plus, BarChart2, Pencil, Copy, Trash2, Coffee, Bean, Timer } from 'lucide-react'
 import { supabase } from './supabase'
 
 function toEntry(row) {
@@ -10,6 +10,7 @@ function toEntry(row) {
     dose: row.dose ?? '',
     grindSize: row.grind_size ?? '',
     waterOrYield: row.water_or_yield ?? '',
+    brewTime: row.brew_time ?? '',
     notes: row.notes ?? '',
     date: row.date ?? '',
     rating: row.rating ?? 0,
@@ -24,6 +25,7 @@ function toRow(form, method) {
     dose: form.dose,
     grind_size: form.grindSize,
     water_or_yield: form.waterOrYield,
+    brew_time: form.brewTime || null,
     notes: form.notes,
     date: form.date || null,
     rating: form.rating,
@@ -35,6 +37,7 @@ const emptyForm = () => ({
   dose: '',
   grindSize: '',
   waterOrYield: '',
+  brewTime: '',
   notes: '',
   date: new Date().toISOString().split('T')[0],
   rating: 0,
@@ -206,14 +209,14 @@ function BrewFormModal({ title, form, setForm, onSubmit, onCancel, isEspresso, e
             <Field label="Coffee Dose" id="modal-dose" value={form.dose} onChange={set('dose')} placeholder="20" unit="g" icon={Scale} />
             <Field label="Grind Size" id="modal-grindSize" value={form.grindSize} onChange={set('grindSize')} placeholder={isEspresso ? '18 (fine)' : '25 (medium)'} icon={SlidersHorizontal} />
           </div>
-          <Field
-            label={isEspresso ? 'Yield' : 'Water Dose'}
-            id="modal-waterOrYield"
-            value={form.waterOrYield}
-            onChange={set('waterOrYield')}
-            placeholder={isEspresso ? '40' : '300'}
-            icon={Droplets}
-          />
+          {isEspresso ? (
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Yield" id="modal-waterOrYield" value={form.waterOrYield} onChange={set('waterOrYield')} placeholder="40" unit="g" icon={Droplets} />
+              <Field label="Time" id="modal-brewTime" value={form.brewTime} onChange={set('brewTime')} placeholder="28" unit="s" icon={Timer} />
+            </div>
+          ) : (
+            <Field label="Water Dose" id="modal-waterOrYield" value={form.waterOrYield} onChange={set('waterOrYield')} placeholder="300" unit="g" icon={Droplets} />
+          )}
           <div>
             <label htmlFor="modal-notes" className="flex items-center gap-1.5 text-xs font-bold text-amber-500 uppercase tracking-wider mb-1.5"><FileText className="w-3.5 h-3.5" />Notes</label>
             <textarea
@@ -343,6 +346,7 @@ export default function CoffeeLog({ method }) {
       dose: entry.dose || '',
       grindSize: entry.grindSize || '',
       waterOrYield: entry.waterOrYield || '',
+      brewTime: entry.brewTime || '',
       notes: entry.notes || '',
       date: entry.date || new Date().toISOString().split('T')[0],
       rating: entry.rating || 0,
@@ -357,6 +361,7 @@ export default function CoffeeLog({ method }) {
       dose: entry.dose || '',
       grindSize: entry.grindSize || '',
       waterOrYield: entry.waterOrYield || '',
+      brewTime: entry.brewTime || '',
       notes: entry.notes || '',
       date: new Date().toISOString().split('T')[0],
       rating: 0,
@@ -514,6 +519,12 @@ export default function CoffeeLog({ method }) {
                           <dt className="text-xs text-stone-500 uppercase tracking-wider">{isEspresso ? 'Yield' : 'Water Dose'}</dt>
                           <dd className="mt-0.5 text-sm font-semibold text-amber-50">{entry.waterOrYield || '—'}</dd>
                         </div>
+                        {isEspresso && (
+                          <div>
+                            <dt className="text-xs text-stone-500 uppercase tracking-wider">Brew Time</dt>
+                            <dd className="mt-0.5 text-sm font-semibold text-amber-50">{entry.brewTime ? `${entry.brewTime}s` : '—'}</dd>
+                          </div>
+                        )}
                         {entry.rating > 0 && (
                           <div>
                             <dt className="text-xs text-stone-500 uppercase tracking-wider">Rating</dt>
