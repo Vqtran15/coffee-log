@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { X, Plus, Trash2, ChevronUp, ChevronDown, LogOut, Settings } from 'lucide-react'
+import { X, Plus, Trash2, ChevronUp, ChevronDown, LogOut, Settings, AlertTriangle } from 'lucide-react'
 import { supabase } from './supabase'
 import { ICON_OPTIONS } from './icons'
 
@@ -16,6 +16,8 @@ export default function SettingsModal({ isOpen, onClose, categories, onCategorie
   const [newCat, setNewCat] = useState(emptyNew())
   const [saving, setSaving] = useState(false)
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
+  const [confirmDeleteAccount, setConfirmDeleteAccount] = useState(false)
+  const [deletingAccount, setDeletingAccount] = useState(false)
 
   if (!isOpen) return null
 
@@ -47,7 +49,7 @@ export default function SettingsModal({ isOpen, onClose, categories, onCategorie
     }
   }
 
-  async function handleDelete(id) {
+  async function handleDeleteCategory(id) {
     const updated = categories
       .filter((c) => c.id !== id)
       .map((c, i) => ({ ...c, position: i }))
@@ -59,6 +61,18 @@ export default function SettingsModal({ isOpen, onClose, categories, onCategorie
     ])
     onCategoriesChange(updated)
     setConfirmDeleteId(null)
+  }
+
+  async function handleDeleteAccount() {
+    setDeletingAccount(true)
+    try {
+      const { error } = await supabase.rpc('delete_current_user')
+      if (error) throw error
+      onSignOut()
+    } catch (err) {
+      console.error('Failed to delete account:', err)
+      setDeletingAccount(false)
+    }
   }
 
   async function move(index, dir) {
@@ -78,14 +92,14 @@ export default function SettingsModal({ isOpen, onClose, categories, onCategorie
   return (
     <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-md backdrop-enter" onClick={onClose} />
-      <div className="relative bg-brew-800 border border-brew-700 rounded-t-2xl sm:rounded-2xl w-full max-w-sm shadow-xl max-h-[85vh] flex flex-col modal-enter">
+      <div className="relative bg-brew-900 border border-brew-600 rounded-t-2xl sm:rounded-2xl w-full max-w-sm shadow-xl max-h-[85vh] flex flex-col modal-enter">
 
-        <div className="sticky top-0 bg-brew-800 border-b border-brew-700 px-5 py-4 flex items-center justify-between rounded-t-2xl shrink-0">
+        <div className="sticky top-0 bg-brew-900 border-b border-brew-600 px-5 py-4 flex items-center justify-between rounded-t-2xl shrink-0">
           <h2 className="flex items-center gap-2 text-sm font-bold text-tan-50 uppercase tracking-wider">
             <Settings className="w-4 h-4" />
             Settings
           </h2>
-          <button onClick={onClose} className="text-brew-400 hover:text-tan-50 transition-colors">
+          <button onClick={onClose} className="text-tan-50/60 hover:text-tan-50 transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -94,25 +108,25 @@ export default function SettingsModal({ isOpen, onClose, categories, onCategorie
 
           {/* Brew Categories */}
           <section>
-            <p className="text-xs font-bold text-brew-400 uppercase tracking-[0.2em] mb-3">Brew Categories</p>
+            <p className="text-xs font-bold text-tan-50 uppercase tracking-[0.2em] mb-3">Brew Categories</p>
 
             <div className="space-y-2">
               {categories.map((cat, index) => {
                 const { Icon } = ICON_OPTIONS.find((o) => o.name === cat.icon_name) || ICON_OPTIONS[1]
                 return (
-                  <div key={cat.id} className="flex items-center gap-2 bg-brew-900 rounded-xl px-3 py-2.5 border border-brew-700">
+                  <div key={cat.id} className="flex items-center gap-2 bg-brew-700/30 rounded-xl px-3 py-2.5 border border-brew-600">
                     <div className="flex flex-col">
                       <button
                         onClick={() => move(index, -1)}
                         disabled={index === 0}
-                        className="text-brew-500 hover:text-tan-50 disabled:opacity-25 transition-colors"
+                        className="text-tan-50/50 hover:text-tan-50 disabled:opacity-20 transition-colors"
                       >
                         <ChevronUp className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => move(index, 1)}
                         disabled={index === categories.length - 1}
-                        className="text-brew-500 hover:text-tan-50 disabled:opacity-25 transition-colors"
+                        className="text-tan-50/50 hover:text-tan-50 disabled:opacity-20 transition-colors"
                       >
                         <ChevronDown className="w-3.5 h-3.5" />
                       </button>
@@ -130,14 +144,14 @@ export default function SettingsModal({ isOpen, onClose, categories, onCategorie
                     {confirmDeleteId === cat.id ? (
                       <div className="flex items-center gap-2 shrink-0">
                         <button
-                          onClick={() => handleDelete(cat.id)}
+                          onClick={() => handleDeleteCategory(cat.id)}
                           className="text-xs font-bold text-red-400 uppercase tracking-wide hover:text-red-300 transition-colors"
                         >
                           Confirm
                         </button>
                         <button
                           onClick={() => setConfirmDeleteId(null)}
-                          className="text-xs font-bold text-brew-400 uppercase tracking-wide hover:text-tan-50 transition-colors"
+                          className="text-xs font-bold text-tan-50/60 uppercase tracking-wide hover:text-tan-50 transition-colors"
                         >
                           Cancel
                         </button>
@@ -145,7 +159,7 @@ export default function SettingsModal({ isOpen, onClose, categories, onCategorie
                     ) : (
                       <button
                         onClick={() => setConfirmDeleteId(cat.id)}
-                        className="text-brew-500 hover:text-red-400 transition-colors shrink-0"
+                        className="text-tan-50/40 hover:text-red-400 transition-colors shrink-0"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -156,7 +170,7 @@ export default function SettingsModal({ isOpen, onClose, categories, onCategorie
             </div>
 
             {addingNew ? (
-              <form onSubmit={handleCreate} className="mt-3 bg-brew-900 rounded-xl border border-brew-700 p-4 space-y-4">
+              <form onSubmit={handleCreate} className="mt-3 bg-brew-700/30 rounded-xl border border-brew-600 p-4 space-y-4">
                 <p className="text-xs font-bold text-tan-50 uppercase tracking-wider">New Category</p>
 
                 <div>
@@ -181,7 +195,7 @@ export default function SettingsModal({ isOpen, onClose, categories, onCategorie
                         className={`flex flex-col items-center gap-1 py-2 rounded-lg border transition-colors ${
                           newCat.icon_name === name
                             ? 'bg-brew-950 border-tan-500 text-brew-900'
-                            : 'border-brew-600 text-brew-400 hover:text-tan-50 hover:border-brew-500'
+                            : 'border-brew-600 text-tan-50/50 hover:text-tan-50 hover:border-brew-400'
                         }`}
                       >
                         <Icon className="w-4 h-4" />
@@ -193,12 +207,12 @@ export default function SettingsModal({ isOpen, onClose, categories, onCategorie
 
                 <div>
                   <label className="block text-xs font-bold text-tan-50 uppercase tracking-wider mb-2">Style</label>
-                  <div className="flex bg-brew-800 rounded-full p-1">
+                  <div className="flex bg-brew-900 rounded-full p-1">
                     <button
                       type="button"
                       onClick={() => setNewCat((f) => ({ ...f, has_brew_time: false }))}
                       className={`flex-1 py-2 rounded-full text-xs font-bold uppercase tracking-wide transition-all ${
-                        !newCat.has_brew_time ? 'bg-brew-950 text-brew-900' : 'text-brew-400 hover:text-tan-50'
+                        !newCat.has_brew_time ? 'bg-brew-950 text-brew-900' : 'text-tan-50/50 hover:text-tan-50'
                       }`}
                     >
                       Pour-over
@@ -207,7 +221,7 @@ export default function SettingsModal({ isOpen, onClose, categories, onCategorie
                       type="button"
                       onClick={() => setNewCat((f) => ({ ...f, has_brew_time: true }))}
                       className={`flex-1 py-2 rounded-full text-xs font-bold uppercase tracking-wide transition-all ${
-                        newCat.has_brew_time ? 'bg-brew-950 text-brew-900' : 'text-brew-400 hover:text-tan-50'
+                        newCat.has_brew_time ? 'bg-brew-950 text-brew-900' : 'text-tan-50/50 hover:text-tan-50'
                       }`}
                     >
                       Espresso
@@ -252,7 +266,7 @@ export default function SettingsModal({ isOpen, onClose, categories, onCategorie
                   <button
                     type="button"
                     onClick={() => { setAddingNew(false); setNewCat(emptyNew()) }}
-                    className="px-4 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider text-brew-400 border border-brew-600 hover:bg-brew-700 transition-colors"
+                    className="px-4 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider text-tan-50/60 border border-brew-600 hover:text-tan-50 transition-colors"
                   >
                     Cancel
                   </button>
@@ -261,7 +275,7 @@ export default function SettingsModal({ isOpen, onClose, categories, onCategorie
             ) : (
               <button
                 onClick={() => setAddingNew(true)}
-                className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-dashed border-brew-600 text-xs font-bold text-brew-400 uppercase tracking-wider hover:text-tan-50 hover:border-brew-500 transition-colors"
+                className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-dashed border-tan-50/30 text-xs font-bold text-tan-50/50 uppercase tracking-wider hover:text-tan-50 hover:border-tan-50/50 transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
                 Add Category
@@ -269,18 +283,54 @@ export default function SettingsModal({ isOpen, onClose, categories, onCategorie
             )}
           </section>
 
-          <div className="h-px bg-brew-700" />
+          <div className="h-px bg-brew-600/40" />
 
           {/* Account */}
           <section>
-            <p className="text-xs font-bold text-brew-400 uppercase tracking-[0.2em] mb-3">Account</p>
+            <p className="text-xs font-bold text-tan-50 uppercase tracking-[0.2em] mb-3">Account</p>
+
             <button
               onClick={onSignOut}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-full text-sm font-bold text-brew-400 bg-brew-900 border border-brew-700 hover:text-tan-50 hover:border-brew-500 uppercase tracking-wider transition-colors"
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-full text-sm font-bold text-tan-50/70 border border-brew-600 hover:text-tan-50 hover:border-brew-400 uppercase tracking-wider transition-colors"
             >
               <LogOut className="w-4 h-4" />
               Sign Out
             </button>
+
+            <div className="mt-3 pt-3 border-t border-brew-600/40">
+              {confirmDeleteAccount ? (
+                <div className="rounded-xl border border-red-500/40 bg-red-500/10 p-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
+                    <p className="text-xs font-bold text-red-400 uppercase tracking-wider">This cannot be undone</p>
+                  </div>
+                  <p className="text-xs text-brew-400">All your brews, categories, and account data will be permanently deleted.</p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleDeleteAccount}
+                      disabled={deletingAccount}
+                      className="flex-1 py-2.5 rounded-full text-xs font-bold uppercase tracking-wide bg-red-500/20 text-red-400 border border-red-500/40 hover:bg-red-500/30 transition-colors disabled:opacity-60"
+                    >
+                      {deletingAccount ? 'Deleting…' : 'Yes, delete forever'}
+                    </button>
+                    <button
+                      onClick={() => setConfirmDeleteAccount(false)}
+                      className="px-4 py-2.5 rounded-full text-xs font-bold uppercase tracking-wide text-tan-50/60 border border-brew-600 hover:text-tan-50 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setConfirmDeleteAccount(true)}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-full text-xs font-bold text-red-400/60 border border-red-500/20 hover:text-red-400 hover:border-red-500/50 uppercase tracking-wider transition-colors"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Delete Account
+                </button>
+              )}
+            </div>
           </section>
 
         </div>
