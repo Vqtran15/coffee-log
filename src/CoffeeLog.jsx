@@ -190,7 +190,7 @@ function DeleteModal({ entry, onConfirm, onCancel }) {
   )
 }
 
-function BrewFormModal({ title, form, setForm, onSubmit, onCancel, isEspresso, editingId, isSaving, isDuplicate }) {
+function BrewFormModal({ title, form, setForm, onSubmit, onCancel, hasBrewTime, editingId, isSaving, isDuplicate }) {
   const [isClosing, setIsClosing] = useState(false)
   function close() { setIsClosing(true); setTimeout(onCancel, 150) }
   function set(field) {
@@ -227,9 +227,9 @@ function BrewFormModal({ title, form, setForm, onSubmit, onCancel, isEspresso, e
           </div>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Coffee Dose" id="modal-dose" value={form.dose} onChange={set('dose')} placeholder="20" icon={Scale} />
-            <Field label="Grind Size" id="modal-grindSize" value={form.grindSize} onChange={set('grindSize')} placeholder={isEspresso ? '18 (fine)' : '25 (medium)'} icon={SlidersHorizontal} />
+            <Field label="Grind Size" id="modal-grindSize" value={form.grindSize} onChange={set('grindSize')} placeholder={hasBrewTime ? '18 (fine)' : '25 (medium)'} icon={SlidersHorizontal} />
           </div>
-          {isEspresso ? (
+          {hasBrewTime ? (
             <div className="grid grid-cols-2 gap-4">
               <Field label="Yield" id="modal-waterOrYield" value={form.waterOrYield} onChange={set('waterOrYield')} placeholder="40" icon={Droplets} />
               <Field label="Time" id="modal-brewTime" value={form.brewTime} onChange={set('brewTime')} placeholder="28" icon={Timer} />
@@ -286,7 +286,7 @@ const SORT_OPTIONS = [
   { value: 'rating', label: 'Top Rated' },
 ]
 
-export default function CoffeeLog({ method }) {
+export default function CoffeeLog({ category }) {
   const [form, setForm] = useState(emptyForm)
   const [entries, setEntries] = useState([])
   const [loading, setLoading] = useState(true)
@@ -313,7 +313,8 @@ export default function CoffeeLog({ method }) {
     })
   }, [])
 
-  const isEspresso = method === 'Espresso'
+  const method = category.name
+  const hasBrewTime = category.has_brew_time
 
   function set(field) {
     return (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
@@ -433,36 +434,25 @@ export default function CoffeeLog({ method }) {
   return (
     <>
     <div className="tab-enter space-y-4">
-      {method === 'V60' && (
-        <CollapsibleCard title="Recommended Ratios" open={ratiosOpen} onToggle={() => setRatiosOpen((o) => !o)} accent icon={BarChart2}>
-          <div className="grid grid-cols-2 gap-3">
-            <RatioCard label="Coffee → Water" value="15g → 240–255g" />
-            <RatioCard label="Coffee → Water" value="30g → 480g" />
-          </div>
-        </CollapsibleCard>
-      )}
-
-      {method === 'Espresso' && (
-        <CollapsibleCard title="Recommended Ratios" open={ratiosOpen} onToggle={() => setRatiosOpen((o) => !o)} accent icon={BarChart2}>
-          <RatioCard label="Coffee → Yield" value="18g → 36g" />
-          <p className="text-xs font-bold text-tan-500 uppercase tracking-wider mt-4 mb-2">Brew Time by Roast</p>
-          <div className="grid grid-cols-3 gap-3">
-            <RatioCard label="Light" value="30–35s" />
-            <RatioCard label="Medium" value="25–30s" />
-            <RatioCard label="Dark" value="20–25s" />
-          </div>
-        </CollapsibleCard>
-      )}
-
-      {method === 'Moccamaster' && (
-        <CollapsibleCard title="Recommended Ratios" open={ratiosOpen} onToggle={() => setRatiosOpen((o) => !o)} accent icon={BarChart2}>
-          <div className="grid grid-cols-3 gap-3">
-            <RatioCard label="Coffee → Water" value="45g → 720g" />
-            <RatioCard label="Coffee → Water" value="30g → 480g" />
-            <RatioCard label="Coffee → Water" value="20g → 340g" />
-          </div>
-        </CollapsibleCard>
-      )}
+      <CollapsibleCard title="Recommended Ratios" open={ratiosOpen} onToggle={() => setRatiosOpen((o) => !o)} accent icon={BarChart2}>
+        <div className="grid grid-cols-2 gap-3">
+          <RatioCard label="Ratio" value={`1 : ${category.ratio_water}`} />
+          <RatioCard
+            label={hasBrewTime ? 'Coffee → Yield' : 'Coffee → Water'}
+            value={`${category.ratio_coffee * 18}g → ${category.ratio_water * 18}g`}
+          />
+        </div>
+        {hasBrewTime && (
+          <>
+            <p className="text-xs font-bold text-tan-50 uppercase tracking-wider mt-4 mb-2">Brew Time by Roast</p>
+            <div className="grid grid-cols-3 gap-3">
+              <RatioCard label="Light" value="30–35s" />
+              <RatioCard label="Medium" value="25–30s" />
+              <RatioCard label="Dark" value="20–25s" />
+            </div>
+          </>
+        )}
+      </CollapsibleCard>
 
       {allMethodEntries.length > 0 && (
         <div>
@@ -538,10 +528,10 @@ export default function CoffeeLog({ method }) {
                           <dd className="mt-0.5 text-sm font-semibold text-tan-50">{entry.grindSize || '—'}</dd>
                         </div>
                         <div>
-                          <dt className="text-xs text-brew-500 uppercase tracking-wider">{isEspresso ? 'Yield' : 'Water Dose'}</dt>
+                          <dt className="text-xs text-brew-500 uppercase tracking-wider">{hasBrewTime ? 'Yield' : 'Water Dose'}</dt>
                           <dd className="mt-0.5 text-sm font-semibold text-tan-50">{entry.waterOrYield || '—'}</dd>
                         </div>
-                        {isEspresso && (
+                        {hasBrewTime && (
                           <div>
                             <dt className="text-xs text-brew-500 uppercase tracking-wider">Brew Time</dt>
                             <dd className="mt-0.5 text-sm font-semibold text-tan-50">{entry.brewTime || '—'}</dd>
@@ -613,7 +603,7 @@ export default function CoffeeLog({ method }) {
           setForm={setForm}
           onSubmit={handleSubmit}
           onCancel={cancelEdit}
-          isEspresso={isEspresso}
+          hasBrewTime={hasBrewTime}
           editingId={editingId}
           isSaving={isSaving}
           isDuplicate={isDuplicate}
