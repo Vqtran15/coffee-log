@@ -93,7 +93,7 @@ function StarRating({ value, onChange, readonly = false, size = 'md' }) {
         readonly ? (
           <span
             key={star}
-            className={`${sizeClass} leading-none ${star <= value ? 'text-tan-500' : 'text-brew-700'}`}
+            className={`${sizeClass} leading-none ${star <= value ? 'text-tan-50' : 'text-brew-700'}`}
           >★</span>
         ) : (
           <button
@@ -101,7 +101,7 @@ function StarRating({ value, onChange, readonly = false, size = 'md' }) {
             type="button"
             onClick={() => onChange(star === value ? 0 : star)}
             className={`${sizeClass} leading-none transition-colors cursor-pointer ${
-              star <= value ? 'text-tan-500' : 'text-brew-600 hover:text-tan-400'
+              star <= value ? 'text-tan-50' : 'text-brew-600 hover:text-tan-400'
             }`}
           >★</button>
         )
@@ -220,16 +220,16 @@ function BrewFormModal({ title, form, setForm, onSubmit, onCancel, isEspresso, e
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Coffee Dose" id="modal-dose" value={form.dose} onChange={set('dose')} placeholder="20" unit="g" icon={Scale} />
+            <Field label="Coffee Dose" id="modal-dose" value={form.dose} onChange={set('dose')} placeholder="20" icon={Scale} />
             <Field label="Grind Size" id="modal-grindSize" value={form.grindSize} onChange={set('grindSize')} placeholder={isEspresso ? '18 (fine)' : '25 (medium)'} icon={SlidersHorizontal} />
           </div>
           {isEspresso ? (
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Yield" id="modal-waterOrYield" value={form.waterOrYield} onChange={set('waterOrYield')} placeholder="40" unit="g" icon={Droplets} />
-              <Field label="Time" id="modal-brewTime" value={form.brewTime} onChange={set('brewTime')} placeholder="28" unit="s" icon={Timer} />
+              <Field label="Yield" id="modal-waterOrYield" value={form.waterOrYield} onChange={set('waterOrYield')} placeholder="40" icon={Droplets} />
+              <Field label="Time" id="modal-brewTime" value={form.brewTime} onChange={set('brewTime')} placeholder="28" icon={Timer} />
             </div>
           ) : (
-            <Field label="Water Dose" id="modal-waterOrYield" value={form.waterOrYield} onChange={set('waterOrYield')} placeholder="300" unit="g" icon={Droplets} />
+            <Field label="Water Dose" id="modal-waterOrYield" value={form.waterOrYield} onChange={set('waterOrYield')} placeholder="300" icon={Droplets} />
           )}
           <div>
             <label htmlFor="modal-notes" className="flex items-center gap-1.5 text-xs font-bold text-tan-500 uppercase tracking-wider mb-1.5"><FileText className="w-3.5 h-3.5" />Notes</label>
@@ -536,7 +536,7 @@ export default function CoffeeLog({ method }) {
                         {isEspresso && (
                           <div>
                             <dt className="text-xs text-brew-500 uppercase tracking-wider">Brew Time</dt>
-                            <dd className="mt-0.5 text-sm font-semibold text-tan-50">{entry.brewTime ? `${entry.brewTime}s` : '—'}</dd>
+                            <dd className="mt-0.5 text-sm font-semibold text-tan-50">{entry.brewTime || '—'}</dd>
                           </div>
                         )}
                         {entry.rating > 0 && (
