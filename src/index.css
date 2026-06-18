@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brew-950: #D8C3A5;
+  --color-brew-950: #F0E6D3;
   --color-brew-900: #5A3F2A;
   --color-brew-800: #5A3F2A;
   --color-brew-700: #8A6A3F;
@@ -10,7 +10,7 @@
   --color-brew-400: #C4A484;
   --color-brew-300: #C4A484;
 
-  --color-tan-50:  #D8C3A5;
+  --color-tan-50:  #F0E6D3;
   --color-tan-300: #C4A484;
   --color-tan-400: #C4A484;
   --color-tan-500: #B58B5A;

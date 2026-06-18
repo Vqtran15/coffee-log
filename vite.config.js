@@ -14,7 +14,7 @@ export default defineConfig({
         short_name: 'Coffee Log',
         description: 'Track your coffee brews',
         theme_color: '#5A3F2A',
-        background_color: '#D8C3A5',
+        background_color: '#F0E6D3',
         display: 'standalone',
         orientation: 'portrait',
         start_url: '/',

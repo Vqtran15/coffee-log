@@ -48,7 +48,7 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'radial-gradient(ellipse 90% 80% at 50% 40%, #EDD9B3 0%, #D8C3A5 55%, #C8AE8A 100%)' }}>
+    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'radial-gradient(ellipse 90% 80% at 50% 40%, #EDD9B3 0%, #F0E6D3 55%, #C8AE8A 100%)' }}>
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <img src="/icon-512.svg" alt="" className="w-16 h-16 mx-auto mb-5 rounded-2xl shadow-warm" />
