@@ -38,7 +38,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-brew-950 pb-32">
-      <header className="sticky top-0 z-40 bg-brew-900/90 backdrop-blur-lg border-b border-brew-700/40 text-tan-50 px-6 pt-8 pb-0">
+      <header className="sticky top-0 z-40 bg-brew-900/90 backdrop-blur-lg border-b border-brew-700/40 text-tan-50 px-6 pb-0" style={{ paddingTop: 'max(2rem, env(safe-area-inset-top))' }}>
         <div className="max-w-2xl mx-auto">
           <div className="flex items-start justify-between">
             <div>
@@ -54,7 +54,7 @@ function App() {
             </button>
           </div>
           <div className="mt-5 h-1 bg-brew-700" />
-          <p className="text-brew-600 text-xs tracking-[0.2em] uppercase mt-3 pb-5">Version 1.1.1</p>
+          <p className="text-brew-600 text-xs tracking-[0.2em] uppercase mt-3 pb-5">Version 1.1.2</p>
         </div>
       </header>
 

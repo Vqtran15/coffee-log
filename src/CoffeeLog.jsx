@@ -124,7 +124,7 @@ function Chevron({ open }) {
 function SectionLabel({ children }) {
   return (
     <div className="flex items-center gap-3 mb-4">
-      <span className="text-xs font-bold text-tan-50 uppercase tracking-[0.25em]">{children}</span>
+      <span className="text-xs font-bold text-brew-900 uppercase tracking-[0.25em]">{children}</span>
       <div className="flex-1 h-px bg-brew-700" />
     </div>
   )
@@ -485,7 +485,7 @@ export default function CoffeeLog({ method }) {
           </div>
 
           {methodEntries.length === 0 && (
-            <p className="text-center text-sm text-brew-500 py-4">No brews match your search.</p>
+            <p className="text-center text-sm text-brew-900 py-4">No brews match your search.</p>
           )}
 
           <div className="space-y-2">
@@ -574,11 +574,11 @@ export default function CoffeeLog({ method }) {
 
 
       {loading && (
-        <p className="text-center text-xs uppercase tracking-[0.25em] text-brew-600 py-12 animate-pulse">Brewing…</p>
+        <p className="text-center text-xs uppercase tracking-[0.25em] text-brew-900 py-12 animate-pulse">Brewing…</p>
       )}
 
       {!loading && allMethodEntries.length === 0 && (
-        <div className="text-center py-12 text-brew-600">
+        <div className="text-center py-12 text-brew-900">
           <p className="text-4xl mb-3">☕</p>
           <p className="text-xs uppercase tracking-[0.25em]">No {method} brews in the log yet</p>
         </div>
