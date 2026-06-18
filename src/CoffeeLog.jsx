@@ -7,6 +7,7 @@ function toEntry(row) {
     id: row.id,
     method: row.method,
     brand: row.brand ?? '',
+    coffeeType: row.coffee_type ?? '',
     dose: row.dose ?? '',
     grindSize: row.grind_size ?? '',
     waterOrYield: row.water_or_yield ?? '',
@@ -22,6 +23,7 @@ function toRow(form, method) {
   return {
     method,
     brand: form.brand,
+    coffee_type: form.coffeeType,
     dose: form.dose,
     grind_size: form.grindSize,
     water_or_yield: form.waterOrYield,
@@ -34,6 +36,7 @@ function toRow(form, method) {
 
 const emptyForm = () => ({
   brand: '',
+  coffeeType: '',
   dose: '',
   grindSize: '',
   waterOrYield: '',
@@ -166,7 +169,7 @@ function DeleteModal({ entry, onConfirm, onCancel }) {
         </div>
         <h3 className="text-tan-50 font-bold text-center text-base uppercase tracking-wider mb-1">Delete Brew?</h3>
         <p className="text-brew-400 text-sm text-center mb-6">
-          <span className="text-tan-300 font-semibold">{entry.brand || 'Unnamed brew'}</span> will be permanently removed.
+          <span className="text-tan-300 font-semibold">{[entry.brand, entry.coffeeType].filter(Boolean).join(' · ') || 'Unnamed brew'}</span> will be permanently removed.
         </p>
         <div className="flex gap-3">
           <button
@@ -209,7 +212,10 @@ function BrewFormModal({ title, form, setForm, onSubmit, onCancel, isEspresso, e
           </button>
         </div>
         <form onSubmit={onSubmit} className="p-5 space-y-4" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-          <Field label="Coffee Brand / Type" id="modal-brand" value={form.brand} onChange={set('brand')} placeholder="e.g. Onyx, Light roast Ethiopia" icon={Coffee} />
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Brand" id="modal-brand" value={form.brand} onChange={set('brand')} placeholder="e.g. Onyx" icon={Coffee} />
+            <Field label="Type" id="modal-coffeeType" value={form.coffeeType} onChange={set('coffeeType')} placeholder="e.g. Light Ethiopia" icon={Coffee} />
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Date" id="modal-date" type="date" value={form.date} onChange={set('date')} icon={Calendar} />
             <div className="flex flex-col">
@@ -357,6 +363,7 @@ export default function CoffeeLog({ method }) {
   function handleEdit(entry) {
     setForm({
       brand: entry.brand || '',
+      coffeeType: entry.coffeeType || '',
       dose: entry.dose || '',
       grindSize: entry.grindSize || '',
       waterOrYield: entry.waterOrYield || '',
@@ -372,6 +379,7 @@ export default function CoffeeLog({ method }) {
   function handleDuplicate(entry) {
     setForm({
       brand: entry.brand || '',
+      coffeeType: entry.coffeeType || '',
       dose: entry.dose || '',
       grindSize: entry.grindSize || '',
       waterOrYield: entry.waterOrYield || '',
@@ -413,7 +421,7 @@ export default function CoffeeLog({ method }) {
   const allMethodEntries = entries.filter((e) => e.method === method)
 
   const methodEntries = allMethodEntries
-    .filter((e) => !searchQuery || (e.brand || '').toLowerCase().includes(searchQuery.toLowerCase()))
+    .filter((e) => !searchQuery || `${e.brand} ${e.coffeeType}`.toLowerCase().includes(searchQuery.toLowerCase()))
     .sort((a, b) => {
       if (sortBy === 'date-desc') return new Date(b.date || b.createdAt || 0) - new Date(a.date || a.createdAt || 0)
       if (sortBy === 'date-asc') return new Date(a.date || a.createdAt || 0) - new Date(b.date || b.createdAt || 0)
@@ -500,7 +508,7 @@ export default function CoffeeLog({ method }) {
                   onClick={() => setExpandedId(expandedId === entry.id ? null : entry.id)}
                 >
                   <div>
-                    <p className="font-bold text-tan-50 text-sm">{entry.brand || 'Unnamed brew'}</p>
+                    <p className="font-bold text-tan-50 text-sm">{[entry.brand, entry.coffeeType].filter(Boolean).join(' · ') || 'Unnamed brew'}</p>
                     <p className="text-xs text-brew-500 mt-0.5 uppercase tracking-wide">{formatDate(entry.date || entry.createdAt)}</p>
                   </div>
                   <div className="flex items-center gap-2">
