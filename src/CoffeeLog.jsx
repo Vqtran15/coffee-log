@@ -219,7 +219,7 @@ function BrewFormModal({ title, form, setForm, onSubmit, onCancel, isEspresso, e
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Date" id="modal-date" type="date" value={form.date} onChange={set('date')} icon={Calendar} />
             <div className="flex flex-col">
-              <label className="flex items-center gap-1.5 text-xs font-bold text-tan-500 uppercase tracking-wider mb-1.5"><Star className="w-3.5 h-3.5" />Rating</label>
+              <label className="flex items-center gap-1.5 text-xs font-bold text-tan-50 uppercase tracking-wider mb-1.5"><Star className="w-3.5 h-3.5" />Rating</label>
               <div className="flex-1 flex items-center">
                 <StarRating value={form.rating} onChange={(v) => setForm((f) => ({ ...f, rating: v }))} />
               </div>
@@ -238,7 +238,7 @@ function BrewFormModal({ title, form, setForm, onSubmit, onCancel, isEspresso, e
             <Field label="Water Dose" id="modal-waterOrYield" value={form.waterOrYield} onChange={set('waterOrYield')} placeholder="300" icon={Droplets} />
           )}
           <div>
-            <label htmlFor="modal-notes" className="flex items-center gap-1.5 text-xs font-bold text-tan-500 uppercase tracking-wider mb-1.5"><FileText className="w-3.5 h-3.5" />Notes</label>
+            <label htmlFor="modal-notes" className="flex items-center gap-1.5 text-xs font-bold text-tan-50 uppercase tracking-wider mb-1.5"><FileText className="w-3.5 h-3.5" />Notes</label>
             <textarea
               id="modal-notes"
               value={form.notes}
