@@ -38,7 +38,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-brew-950 pb-32">
-      <header className="sticky top-0 z-40 bg-brew-900/90 backdrop-blur-lg border-b border-brew-700/40 text-tan-50 px-6 pb-0" style={{ paddingTop: 'max(2rem, env(safe-area-inset-top))' }}>
+      <header className="sticky top-0 z-40 bg-brew-900 border-b border-brew-700/40 text-tan-50 px-6 pb-0" style={{ paddingTop: 'max(2rem, env(safe-area-inset-top))' }}>
         <div className="max-w-2xl mx-auto">
           <div className="flex items-start justify-between">
             <div>
@@ -64,7 +64,7 @@ function App() {
         </div>
       </div>
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-brew-900/90 backdrop-blur-lg border-t border-brew-700/40 z-50" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      <nav className="fixed bottom-0 left-0 right-0 bg-brew-900 border-t border-brew-700/40 z-50" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         <div className="max-w-2xl mx-auto flex gap-2 px-3 py-3">
           {TABS.map((tab) => (
             <button
