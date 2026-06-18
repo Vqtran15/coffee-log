@@ -213,7 +213,7 @@ function BrewFormModal({ title, form, setForm, onSubmit, onCancel, hasBrewTime, 
         </div>
         <form onSubmit={onSubmit} className="p-5 space-y-4" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Brand" id="modal-brand" value={form.brand} onChange={set('brand')} placeholder="e.g. Onyx" icon={Coffee} />
+            <Field label="Roaster" id="modal-brand" value={form.brand} onChange={set('brand')} placeholder="e.g. Sisters" icon={Coffee} />
             <Field label="Type" id="modal-coffeeType" value={form.coffeeType} onChange={set('coffeeType')} placeholder="e.g. Light Ethiopia" icon={Coffee} />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -282,7 +282,7 @@ function RatioCard({ label, value }) {
 const SORT_OPTIONS = [
   { value: 'date-desc', label: 'Newest' },
   { value: 'date-asc', label: 'Oldest' },
-  { value: 'brand', label: 'Brand A–Z' },
+  { value: 'brand', label: 'Roaster A–Z' },
   { value: 'rating', label: 'Top Rated' },
 ]
 
