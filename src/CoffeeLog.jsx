@@ -79,19 +79,23 @@ function StarRating({ value, onChange, readonly = false, size = 'md' }) {
   const sizeClass = size === 'sm' ? 'text-sm' : 'text-xl'
   return (
     <div className="flex gap-0.5">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <button
-          key={star}
-          type="button"
-          disabled={readonly}
-          onClick={() => !readonly && onChange(star === value ? 0 : star)}
-          className={`${sizeClass} leading-none transition-colors ${readonly ? 'cursor-default' : 'cursor-pointer'} ${
-            star <= value ? 'text-amber-500' : readonly ? 'text-stone-700' : 'text-stone-600 hover:text-amber-400'
-          }`}
-        >
-          ★
-        </button>
-      ))}
+      {[1, 2, 3, 4, 5].map((star) =>
+        readonly ? (
+          <span
+            key={star}
+            className={`${sizeClass} leading-none ${star <= value ? 'text-amber-500' : 'text-stone-700'}`}
+          >★</span>
+        ) : (
+          <button
+            key={star}
+            type="button"
+            onClick={() => onChange(star === value ? 0 : star)}
+            className={`${sizeClass} leading-none transition-colors cursor-pointer ${
+              star <= value ? 'text-amber-500' : 'text-stone-600 hover:text-amber-400'
+            }`}
+          >★</button>
+        )
+      )}
     </div>
   )
 }
