@@ -46,13 +46,36 @@ const emptyForm = () => ({
 function formatDate(dateStr) {
   if (!dateStr) return ''
   const d = dateStr.includes('T') ? new Date(dateStr) : new Date(dateStr + 'T00:00:00')
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const entryDay = new Date(d.getFullYear(), d.getMonth(), d.getDate())
+  const diffDays = Math.round((today - entryDay) / 86400000)
+  if (diffDays === 0) return 'Today'
+  if (diffDays === 1) return 'Yesterday'
+  if (diffDays < 7) return `${diffDays} days ago`
+  if (diffDays < 14) return '1 week ago'
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+function SkeletonCard() {
+  return (
+    <div className="bg-brew-800 rounded-xl border border-brew-700/50 shadow-warm px-4 py-3">
+      <div className="flex items-center justify-between">
+        <div className="flex-1">
+          <div className="skeleton h-4 w-2/5 rounded-full mb-2.5" />
+          <div className="skeleton h-3 w-1/4 rounded-full" />
+        </div>
+        <div className="skeleton h-6 w-14 rounded-full" />
+      </div>
+    </div>
+  )
 }
 
 function Field({ label, id, type = 'text', value, onChange, placeholder, unit, icon: Icon }) {
   return (
     <div>
-      <label htmlFor={id} className="flex items-center gap-1.5 text-xs font-bold text-amber-500 uppercase tracking-wider mb-1.5">
+      <label htmlFor={id} className="flex items-center gap-1.5 text-xs font-bold text-tan-500 uppercase tracking-wider mb-1.5">
         {Icon && <Icon className="w-3.5 h-3.5" />}
         {label}
       </label>
@@ -63,10 +86,10 @@ function Field({ label, id, type = 'text', value, onChange, placeholder, unit, i
           value={value}
           onChange={onChange}
           placeholder={placeholder}
-          className="w-full rounded-md border border-stone-600 bg-stone-700 px-3 py-2 text-sm text-amber-50 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition"
+          className="w-full rounded-md border border-brew-600 bg-brew-950 px-3 py-2 text-sm text-brew-900 placeholder-brew-600 focus:outline-none focus:ring-2 focus:ring-tan-500 focus:border-transparent transition"
         />
         {unit && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-stone-500 pointer-events-none">
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-brew-500 pointer-events-none">
             {unit}
           </span>
         )}
@@ -83,7 +106,7 @@ function StarRating({ value, onChange, readonly = false, size = 'md' }) {
         readonly ? (
           <span
             key={star}
-            className={`${sizeClass} leading-none ${star <= value ? 'text-amber-500' : 'text-stone-700'}`}
+            className={`${sizeClass} leading-none ${star <= value ? 'text-tan-500' : 'text-brew-700'}`}
           >★</span>
         ) : (
           <button
@@ -91,7 +114,7 @@ function StarRating({ value, onChange, readonly = false, size = 'md' }) {
             type="button"
             onClick={() => onChange(star === value ? 0 : star)}
             className={`${sizeClass} leading-none transition-colors cursor-pointer ${
-              star <= value ? 'text-amber-500' : 'text-stone-600 hover:text-amber-400'
+              star <= value ? 'text-tan-500' : 'text-brew-600 hover:text-tan-400'
             }`}
           >★</button>
         )
@@ -103,7 +126,7 @@ function StarRating({ value, onChange, readonly = false, size = 'md' }) {
 function Chevron({ open }) {
   return (
     <svg
-      className={`w-4 h-4 text-stone-500 transition-transform duration-300 ${open ? 'rotate-180' : ''}`}
+      className={`w-4 h-4 text-brew-500 transition-transform duration-300 ${open ? 'rotate-180' : ''}`}
       fill="none" viewBox="0 0 24 24" stroke="currentColor"
     >
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -114,20 +137,20 @@ function Chevron({ open }) {
 function SectionLabel({ children }) {
   return (
     <div className="flex items-center gap-3 mb-4">
-      <span className="text-xs font-bold text-amber-500 uppercase tracking-[0.25em]">{children}</span>
-      <div className="flex-1 h-px bg-stone-700" />
+      <span className="text-xs font-bold text-tan-500 uppercase tracking-[0.25em]">{children}</span>
+      <div className="flex-1 h-px bg-brew-700" />
     </div>
   )
 }
 
 function CollapsibleCard({ title, open, onToggle, accent, icon: Icon, children }) {
   return (
-    <div className={`rounded-xl overflow-hidden bg-stone-800 border border-stone-700 ${accent ? 'border-l-4 border-l-amber-500' : ''}`}>
+    <div className={`rounded-xl overflow-hidden bg-brew-800 border border-brew-700/60 shadow-warm ${accent ? 'border-l-4 border-l-tan-500' : ''}`}>
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between px-5 py-4 hover:bg-stone-700/50 transition-colors"
+        className="w-full flex items-center justify-between px-5 py-4 hover:bg-brew-700/50 transition-colors"
       >
-        <h2 className={`flex items-center gap-2 font-bold uppercase tracking-wider ${accent ? 'text-xs text-amber-500' : 'text-sm text-amber-50'}`}>
+        <h2 className={`flex items-center gap-2 font-bold uppercase tracking-wider ${accent ? 'text-xs text-tan-500' : 'text-sm text-tan-50'}`}>
           {Icon && <Icon className="w-4 h-4" />}
           {title}
         </h2>
@@ -150,18 +173,18 @@ function DeleteModal({ entry, onConfirm, onCancel }) {
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center px-4">
       <div className={`absolute inset-0 bg-black/70 backdrop-blur-md ${isClosing ? 'backdrop-exit' : 'backdrop-enter'}`} onClick={close} />
-      <div className={`relative bg-stone-800 border border-stone-700 rounded-2xl p-6 w-full max-w-sm shadow-xl ${isClosing ? 'modal-exit' : 'modal-enter'}`}>
+      <div className={`relative bg-brew-800 border border-brew-700 rounded-2xl p-6 w-full max-w-sm shadow-xl ${isClosing ? 'modal-exit' : 'modal-enter'}`}>
         <div className="flex items-center justify-center w-10 h-10 rounded-full bg-red-500/10 border border-red-500/30 mx-auto mb-4">
           <Trash2 className="w-5 h-5 text-red-500" />
         </div>
-        <h3 className="text-amber-50 font-bold text-center text-base uppercase tracking-wider mb-1">Delete Brew?</h3>
-        <p className="text-stone-400 text-sm text-center mb-6">
-          <span className="text-amber-300 font-semibold">{entry.brand || 'Unnamed brew'}</span> will be permanently removed.
+        <h3 className="text-tan-50 font-bold text-center text-base uppercase tracking-wider mb-1">Delete Brew?</h3>
+        <p className="text-brew-400 text-sm text-center mb-6">
+          <span className="text-tan-300 font-semibold">{entry.brand || 'Unnamed brew'}</span> will be permanently removed.
         </p>
         <div className="flex gap-3">
           <button
             onClick={close}
-            className="flex-1 py-3 rounded-full text-sm font-bold uppercase tracking-wide text-stone-300 bg-stone-700 hover:bg-stone-600 transition-colors"
+            className="flex-1 py-3 rounded-full text-sm font-bold uppercase tracking-wide text-brew-300 bg-brew-700 hover:bg-brew-600 transition-colors"
           >
             Cancel
           </button>
@@ -186,13 +209,13 @@ function BrewFormModal({ title, form, setForm, onSubmit, onCancel, isEspresso, e
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center px-4">
       <div className={`absolute inset-0 bg-black/70 backdrop-blur-md ${isClosing ? 'backdrop-exit' : 'backdrop-enter'}`} onClick={close} />
-      <div className={`relative bg-stone-800 border border-stone-700 rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto shadow-xl ${isClosing ? 'modal-exit' : 'modal-enter'}`}>
-        <div className="sticky top-0 bg-stone-800 border-b border-stone-700 px-5 py-4 flex items-center justify-between rounded-t-2xl">
-          <h2 className="flex items-center gap-2 text-sm font-bold text-amber-50 uppercase tracking-wider">
-            {editingId ? <Pencil className="w-4 h-4 text-amber-500" /> : isDuplicate ? <Copy className="w-4 h-4 text-amber-500" /> : <Plus className="w-4 h-4 text-amber-500" />}
+      <div className={`relative bg-brew-800 border border-brew-700 rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto shadow-xl ${isClosing ? 'modal-exit' : 'modal-enter'}`}>
+        <div className="sticky top-0 bg-brew-800 border-b border-brew-700 px-5 py-4 flex items-center justify-between rounded-t-2xl">
+          <h2 className="flex items-center gap-2 text-sm font-bold text-tan-50 uppercase tracking-wider">
+            {editingId ? <Pencil className="w-4 h-4 text-tan-500" /> : isDuplicate ? <Copy className="w-4 h-4 text-tan-500" /> : <Plus className="w-4 h-4 text-tan-500" />}
             {title}
           </h2>
-          <button onClick={close} className="text-stone-500 hover:text-stone-300 transition-colors">
+          <button onClick={close} className="text-brew-500 hover:text-brew-300 transition-colors">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -203,7 +226,7 @@ function BrewFormModal({ title, form, setForm, onSubmit, onCancel, isEspresso, e
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Date" id="modal-date" type="date" value={form.date} onChange={set('date')} icon={Calendar} />
             <div className="flex flex-col">
-              <label className="flex items-center gap-1.5 text-xs font-bold text-amber-500 uppercase tracking-wider mb-1.5"><Star className="w-3.5 h-3.5" />Rating</label>
+              <label className="flex items-center gap-1.5 text-xs font-bold text-tan-500 uppercase tracking-wider mb-1.5"><Star className="w-3.5 h-3.5" />Rating</label>
               <div className="flex-1 flex items-center">
                 <StarRating value={form.rating} onChange={(v) => setForm((f) => ({ ...f, rating: v }))} />
               </div>
@@ -222,28 +245,28 @@ function BrewFormModal({ title, form, setForm, onSubmit, onCancel, isEspresso, e
             <Field label="Water Dose" id="modal-waterOrYield" value={form.waterOrYield} onChange={set('waterOrYield')} placeholder="300" unit="g" icon={Droplets} />
           )}
           <div>
-            <label htmlFor="modal-notes" className="flex items-center gap-1.5 text-xs font-bold text-amber-500 uppercase tracking-wider mb-1.5"><FileText className="w-3.5 h-3.5" />Notes</label>
+            <label htmlFor="modal-notes" className="flex items-center gap-1.5 text-xs font-bold text-tan-500 uppercase tracking-wider mb-1.5"><FileText className="w-3.5 h-3.5" />Notes</label>
             <textarea
               id="modal-notes"
               value={form.notes}
               onChange={set('notes')}
               placeholder="Tasting notes, adjustments, observations..."
               rows={3}
-              className="w-full rounded-md border border-stone-600 bg-stone-700 px-3 py-2 text-sm text-amber-50 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition resize-none"
+              className="w-full rounded-md border border-brew-600 bg-brew-950 px-3 py-2 text-sm text-brew-900 placeholder-brew-600 focus:outline-none focus:ring-2 focus:ring-tan-500 focus:border-transparent transition resize-none"
             />
           </div>
           <div className="flex gap-2 pb-2">
             <button
               type="submit"
               disabled={isSaving}
-              className="flex-1 bg-amber-500 text-stone-900 py-3 rounded-full font-bold text-sm uppercase tracking-wider hover:bg-amber-400 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="flex-1 bg-tan-500 text-brew-900 py-3 rounded-full font-bold text-sm uppercase tracking-wider hover:bg-tan-400 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isSaving ? 'Saving…' : editingId ? 'Update Brew' : 'Save Brew'}
             </button>
             <button
               type="button"
               onClick={close}
-              className="px-5 py-3 rounded-full text-sm font-bold uppercase tracking-wider text-stone-400 border border-stone-600 hover:bg-stone-700 transition-colors"
+              className="px-5 py-3 rounded-full text-sm font-bold uppercase tracking-wider text-brew-400 border border-brew-600 hover:bg-brew-700 transition-colors"
             >
               Cancel
             </button>
@@ -256,9 +279,9 @@ function BrewFormModal({ title, form, setForm, onSubmit, onCancel, isEspresso, e
 
 function RatioCard({ label, value }) {
   return (
-    <div className="bg-stone-900 rounded-lg px-4 py-3 border border-stone-700">
-      <p className="text-xs text-stone-500 uppercase tracking-wider mb-1">{label}</p>
-      <p className="text-sm font-bold text-amber-50">{value}</p>
+    <div className="bg-brew-900 rounded-lg px-4 py-3 border border-brew-700">
+      <p className="text-xs text-brew-500 uppercase tracking-wider mb-1">{label}</p>
+      <p className="text-sm font-bold text-tan-50">{value}</p>
     </div>
   )
 }
@@ -427,7 +450,7 @@ export default function CoffeeLog({ method }) {
       {method === 'Espresso' && (
         <CollapsibleCard title="Recommended Ratios" open={ratiosOpen} onToggle={() => setRatiosOpen((o) => !o)} accent icon={BarChart2}>
           <RatioCard label="Coffee → Yield" value="18g → 36g" />
-          <p className="text-xs font-bold text-amber-500 uppercase tracking-wider mt-4 mb-2">Brew Time by Roast</p>
+          <p className="text-xs font-bold text-tan-500 uppercase tracking-wider mt-4 mb-2">Brew Time by Roast</p>
           <div className="grid grid-cols-3 gap-3">
             <RatioCard label="Light" value="30–35s" />
             <RatioCard label="Medium" value="25–30s" />
@@ -456,50 +479,50 @@ export default function CoffeeLog({ method }) {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by brand..."
-              className="flex-1 rounded-md border border-stone-600 bg-stone-800 px-3 py-2 text-sm text-amber-50 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition"
+              className="flex-1 rounded-md border border-brew-600 bg-brew-950 px-3 py-2 text-sm text-brew-900 placeholder-brew-600 focus:outline-none focus:ring-2 focus:ring-tan-500 focus:border-transparent transition"
             />
             <div className="relative">
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="appearance-none rounded-md border border-stone-600 bg-stone-800 pl-3 pr-8 py-2 text-sm text-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-500 transition"
+                className="appearance-none rounded-md border border-brew-600 bg-brew-800 pl-3 pr-8 py-2 text-sm text-brew-300 focus:outline-none focus:ring-2 focus:ring-tan-500 transition"
               >
                 {SORT_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
               </select>
-              <svg className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-brew-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </div>
           </div>
 
           {methodEntries.length === 0 && (
-            <p className="text-center text-sm text-stone-500 py-4">No brews match your search.</p>
+            <p className="text-center text-sm text-brew-500 py-4">No brews match your search.</p>
           )}
 
           <div className="space-y-2">
             {methodEntries.map((entry, index) => (
               <div
                 key={entry.id}
-                className={`bg-stone-800 rounded-xl border border-stone-700 overflow-hidden ${recentlyAddedId === entry.id ? 'entry-enter' : ''} ${deletingId === entry.id ? 'entry-exit' : ''} ${recentlyUpdatedId === entry.id ? 'entry-flash' : ''} ${animatingInitial ? 'log-entry-in' : ''}`}
+                className={`bg-brew-800 rounded-xl border border-brew-700/60 shadow-warm overflow-hidden ${recentlyAddedId === entry.id ? 'entry-enter' : ''} ${deletingId === entry.id ? 'entry-exit' : ''} ${recentlyUpdatedId === entry.id ? 'entry-flash' : ''} ${animatingInitial ? 'log-entry-in' : ''}`}
                 style={animatingInitial ? { animationDelay: `${index * 50}ms` } : {}}
               >
                 <button
-                  className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-stone-700/50 transition-colors"
+                  className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-brew-700/50 transition-colors"
                   onClick={() => setExpandedId(expandedId === entry.id ? null : entry.id)}
                 >
                   <div>
-                    <p className="font-bold text-amber-50 text-sm">{entry.brand || 'Unnamed brew'}</p>
-                    <p className="text-xs text-stone-500 mt-0.5 uppercase tracking-wide">{formatDate(entry.date || entry.createdAt)}</p>
+                    <p className="font-bold text-tan-50 text-sm">{entry.brand || 'Unnamed brew'}</p>
+                    <p className="text-xs text-brew-500 mt-0.5 uppercase tracking-wide">{formatDate(entry.date || entry.createdAt)}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     {entry.rating > 0 && <StarRating value={entry.rating} onChange={() => {}} readonly size="sm" />}
-                    <span className="flex items-center gap-1 text-xs text-amber-500 font-bold bg-stone-700 px-2 py-0.5 rounded">
+                    <span className="flex items-center gap-1 text-xs text-tan-500 font-bold bg-brew-700 px-2 py-0.5 rounded">
                       <Bean className="w-3 h-3" />{entry.dose}
                     </span>
                     <svg
-                      className={`w-4 h-4 text-stone-500 transition-transform duration-300 ${expandedId === entry.id ? 'rotate-180' : ''}`}
+                      className={`w-4 h-4 text-brew-500 transition-transform duration-300 ${expandedId === entry.id ? 'rotate-180' : ''}`}
                       fill="none" viewBox="0 0 24 24" stroke="currentColor"
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -509,47 +532,47 @@ export default function CoffeeLog({ method }) {
 
                 <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${expandedId === entry.id ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
                   <div className="overflow-hidden">
-                    <div className="px-4 pb-4 border-t border-stone-700">
+                    <div className="px-4 pb-4 border-t border-brew-700">
                       <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3">
                         <div>
-                          <dt className="text-xs text-stone-500 uppercase tracking-wider">Coffee Dose</dt>
-                          <dd className="mt-0.5 text-sm font-semibold text-amber-50">{entry.dose || '—'}</dd>
+                          <dt className="text-xs text-brew-500 uppercase tracking-wider">Coffee Dose</dt>
+                          <dd className="mt-0.5 text-sm font-semibold text-tan-50">{entry.dose || '—'}</dd>
                         </div>
                         <div>
-                          <dt className="text-xs text-stone-500 uppercase tracking-wider">Grind Size</dt>
-                          <dd className="mt-0.5 text-sm font-semibold text-amber-50">{entry.grindSize || '—'}</dd>
+                          <dt className="text-xs text-brew-500 uppercase tracking-wider">Grind Size</dt>
+                          <dd className="mt-0.5 text-sm font-semibold text-tan-50">{entry.grindSize || '—'}</dd>
                         </div>
                         <div>
-                          <dt className="text-xs text-stone-500 uppercase tracking-wider">{isEspresso ? 'Yield' : 'Water Dose'}</dt>
-                          <dd className="mt-0.5 text-sm font-semibold text-amber-50">{entry.waterOrYield || '—'}</dd>
+                          <dt className="text-xs text-brew-500 uppercase tracking-wider">{isEspresso ? 'Yield' : 'Water Dose'}</dt>
+                          <dd className="mt-0.5 text-sm font-semibold text-tan-50">{entry.waterOrYield || '—'}</dd>
                         </div>
                         {isEspresso && (
                           <div>
-                            <dt className="text-xs text-stone-500 uppercase tracking-wider">Brew Time</dt>
-                            <dd className="mt-0.5 text-sm font-semibold text-amber-50">{entry.brewTime ? `${entry.brewTime}s` : '—'}</dd>
+                            <dt className="text-xs text-brew-500 uppercase tracking-wider">Brew Time</dt>
+                            <dd className="mt-0.5 text-sm font-semibold text-tan-50">{entry.brewTime ? `${entry.brewTime}s` : '—'}</dd>
                           </div>
                         )}
                         {entry.rating > 0 && (
                           <div>
-                            <dt className="text-xs text-stone-500 uppercase tracking-wider">Rating</dt>
+                            <dt className="text-xs text-brew-500 uppercase tracking-wider">Rating</dt>
                             <dd className="mt-1"><StarRating value={entry.rating} onChange={() => {}} readonly /></dd>
                           </div>
                         )}
                       </dl>
                       {entry.notes && (
                         <div className="mt-3">
-                          <p className="text-xs text-stone-500 uppercase tracking-wider">Notes</p>
-                          <p className="mt-1 text-sm text-stone-300 whitespace-pre-wrap">{entry.notes}</p>
+                          <p className="text-xs text-brew-500 uppercase tracking-wider">Notes</p>
+                          <p className="mt-1 text-sm text-brew-300 whitespace-pre-wrap">{entry.notes}</p>
                         </div>
                       )}
-                      <div className="flex gap-2 mt-4 pt-3 border-t border-stone-700">
-                        <button onClick={() => handleEdit(entry)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider text-amber-500 hover:text-amber-300 hover:bg-stone-700 transition-colors">
+                      <div className="flex gap-2 mt-4 pt-3 border-t border-brew-700">
+                        <button onClick={() => handleEdit(entry)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider text-tan-500 hover:text-tan-300 hover:bg-brew-700 transition-colors">
                           <Pencil className="w-3.5 h-3.5" />Edit
                         </button>
-                        <button onClick={() => handleDuplicate(entry)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider text-amber-500 hover:text-amber-300 hover:bg-stone-700 transition-colors">
+                        <button onClick={() => handleDuplicate(entry)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider text-tan-500 hover:text-tan-300 hover:bg-brew-700 transition-colors">
                           <Copy className="w-3.5 h-3.5" />Duplicate
                         </button>
-                        <button onClick={() => setDeleteConfirmId(entry.id)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider text-red-500 hover:text-red-400 hover:bg-stone-700 transition-colors">
+                        <button onClick={() => setDeleteConfirmId(entry.id)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider text-red-500 hover:text-red-400 hover:bg-brew-700 transition-colors">
                           <Trash2 className="w-3.5 h-3.5" />Delete
                         </button>
                       </div>
@@ -563,13 +586,15 @@ export default function CoffeeLog({ method }) {
       )}
 
       {loading && (
-        <div className="text-center py-12 text-stone-600">
-          <p className="text-xs uppercase tracking-[0.25em] animate-pulse">Loading brews…</p>
+        <div className="space-y-2">
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
         </div>
       )}
 
       {!loading && allMethodEntries.length === 0 && (
-        <div className="text-center py-12 text-stone-600">
+        <div className="text-center py-12 text-brew-600">
           <p className="text-4xl mb-3">☕</p>
           <p className="text-xs uppercase tracking-[0.25em]">No {method} brews in the log yet</p>
         </div>
@@ -582,7 +607,7 @@ export default function CoffeeLog({ method }) {
       >
         <button
           onClick={() => { setForm(emptyForm()); setEditingId(null); setIsDuplicate(false); setModalOpen(true) }}
-          className="fab-enter w-14 h-14 rounded-full bg-amber-500 text-stone-900 shadow-lg shadow-amber-500/30 flex items-center justify-center hover:bg-amber-400 active:scale-95 transition-all"
+          className="fab-enter w-14 h-14 rounded-full bg-tan-500 text-brew-900 shadow-lg shadow-tan-500/30 flex items-center justify-center hover:bg-tan-400 active:scale-95 transition-all"
           aria-label="New brew"
         >
           <Plus className="w-6 h-6" />

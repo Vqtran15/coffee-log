@@ -1,5 +1,26 @@
 @import "tailwindcss";
 
+@theme {
+  --color-brew-950: #D8C3A5;
+  --color-brew-900: #5A3F2A;
+  --color-brew-800: #5A3F2A;
+  --color-brew-700: #8A6A3F;
+  --color-brew-600: #B58B5A;
+  --color-brew-500: #B58B5A;
+  --color-brew-400: #C4A484;
+  --color-brew-300: #C4A484;
+
+  --color-tan-50:  #D8C3A5;
+  --color-tan-300: #C4A484;
+  --color-tan-400: #C4A484;
+  --color-tan-500: #B58B5A;
+
+  --font-sans: 'DM Sans', system-ui, sans-serif;
+  --font-display: 'Bebas Neue', sans-serif;
+
+  --shadow-warm: 0 2px 10px rgba(90, 63, 42, 0.2), 0 1px 3px rgba(90, 63, 42, 0.1);
+}
+
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
@@ -14,7 +35,18 @@
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans);
+}
+
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #46261A 25%, #654030 50%, #46261A 75%);
+  background-size: 400px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
 }
 
 @keyframes tabFadeIn {
@@ -63,7 +95,7 @@ body {
 
 @keyframes entryFlash {
   0%        { box-shadow: none; }
-  30%       { box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.8), 0 0 16px rgba(245, 158, 11, 0.3); }
+  30%       { box-shadow: 0 0 0 3px rgba(181, 139, 90, 0.8), 0 0 16px rgba(181, 139, 90, 0.3); }
   100%      { box-shadow: none; }
 }
 
