@@ -38,7 +38,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-brew-950 pb-32">
-      <header className="sticky top-0 z-40 bg-brew-900 border-b border-brew-700/40 text-tan-50 px-6 pb-0" style={{ paddingTop: 'max(2rem, env(safe-area-inset-top))' }}>
+      <header className="sticky top-0 z-40 bg-brew-900 text-tan-50 px-6 pb-0" style={{ paddingTop: 'max(2rem, env(safe-area-inset-top))', boxShadow: '0 4px 20px rgba(90, 63, 42, 0.35)' }}>
         <div className="max-w-2xl mx-auto">
           <div className="flex items-start justify-between">
             <div>
