@@ -58,24 +58,11 @@ function formatDate(dateStr) {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-function SkeletonCard() {
-  return (
-    <div className="bg-brew-800 rounded-xl border border-brew-700/50 shadow-warm px-4 py-3">
-      <div className="flex items-center justify-between">
-        <div className="flex-1">
-          <div className="skeleton h-4 w-2/5 rounded-full mb-2.5" />
-          <div className="skeleton h-3 w-1/4 rounded-full" />
-        </div>
-        <div className="skeleton h-6 w-14 rounded-full" />
-      </div>
-    </div>
-  )
-}
 
 function Field({ label, id, type = 'text', value, onChange, placeholder, unit, icon: Icon }) {
   return (
     <div>
-      <label htmlFor={id} className="flex items-center gap-1.5 text-xs font-bold text-tan-500 uppercase tracking-wider mb-1.5">
+      <label htmlFor={id} className="flex items-center gap-1.5 text-xs font-bold text-tan-50 uppercase tracking-wider mb-1.5">
         {Icon && <Icon className="w-3.5 h-3.5" />}
         {label}
       </label>
@@ -86,10 +73,10 @@ function Field({ label, id, type = 'text', value, onChange, placeholder, unit, i
           value={value}
           onChange={onChange}
           placeholder={placeholder}
-          className="w-full rounded-md border border-brew-600 bg-brew-950 px-3 py-2 text-sm text-brew-900 placeholder-brew-600 focus:outline-none focus:ring-2 focus:ring-tan-500 focus:border-transparent transition"
+          className="w-full rounded-md border border-brew-600 bg-brew-950 px-3 py-2 text-sm text-brew-900 placeholder-brew-700 focus:outline-none focus:ring-2 focus:ring-tan-500 focus:border-transparent transition"
         />
         {unit && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-brew-500 pointer-events-none">
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-brew-700 pointer-events-none">
             {unit}
           </span>
         )}
@@ -126,7 +113,7 @@ function StarRating({ value, onChange, readonly = false, size = 'md' }) {
 function Chevron({ open }) {
   return (
     <svg
-      className={`w-4 h-4 text-brew-500 transition-transform duration-300 ${open ? 'rotate-180' : ''}`}
+      className={`w-4 h-4 text-brew-400 transition-transform duration-300 ${open ? 'rotate-180' : ''}`}
       fill="none" viewBox="0 0 24 24" stroke="currentColor"
     >
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -137,7 +124,7 @@ function Chevron({ open }) {
 function SectionLabel({ children }) {
   return (
     <div className="flex items-center gap-3 mb-4">
-      <span className="text-xs font-bold text-tan-500 uppercase tracking-[0.25em]">{children}</span>
+      <span className="text-xs font-bold text-tan-50 uppercase tracking-[0.25em]">{children}</span>
       <div className="flex-1 h-px bg-brew-700" />
     </div>
   )
@@ -150,7 +137,7 @@ function CollapsibleCard({ title, open, onToggle, accent, icon: Icon, children }
         onClick={onToggle}
         className="w-full flex items-center justify-between px-5 py-4 hover:bg-brew-700/50 transition-colors"
       >
-        <h2 className={`flex items-center gap-2 font-bold uppercase tracking-wider ${accent ? 'text-xs text-tan-500' : 'text-sm text-tan-50'}`}>
+        <h2 className={`flex items-center gap-2 font-bold uppercase tracking-wider ${accent ? 'text-xs text-tan-50' : 'text-sm text-tan-50'}`}>
           {Icon && <Icon className="w-4 h-4" />}
           {title}
         </h2>
@@ -184,7 +171,7 @@ function DeleteModal({ entry, onConfirm, onCancel }) {
         <div className="flex gap-3">
           <button
             onClick={close}
-            className="flex-1 py-3 rounded-full text-sm font-bold uppercase tracking-wide text-brew-300 bg-brew-700 hover:bg-brew-600 transition-colors"
+            className="flex-1 py-3 rounded-full text-sm font-bold uppercase tracking-wide text-tan-50 bg-brew-900 hover:bg-brew-700 transition-colors"
           >
             Cancel
           </button>
@@ -212,10 +199,10 @@ function BrewFormModal({ title, form, setForm, onSubmit, onCancel, isEspresso, e
       <div className={`relative bg-brew-800 border border-brew-700 rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto shadow-xl ${isClosing ? 'modal-exit' : 'modal-enter'}`}>
         <div className="sticky top-0 bg-brew-800 border-b border-brew-700 px-5 py-4 flex items-center justify-between rounded-t-2xl">
           <h2 className="flex items-center gap-2 text-sm font-bold text-tan-50 uppercase tracking-wider">
-            {editingId ? <Pencil className="w-4 h-4 text-tan-500" /> : isDuplicate ? <Copy className="w-4 h-4 text-tan-500" /> : <Plus className="w-4 h-4 text-tan-500" />}
+            {editingId ? <Pencil className="w-4 h-4 text-tan-50" /> : isDuplicate ? <Copy className="w-4 h-4 text-tan-50" /> : <Plus className="w-4 h-4 text-tan-50" />}
             {title}
           </h2>
-          <button onClick={close} className="text-brew-500 hover:text-brew-300 transition-colors">
+          <button onClick={close} className="text-brew-400 hover:text-tan-50 transition-colors">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -252,14 +239,14 @@ function BrewFormModal({ title, form, setForm, onSubmit, onCancel, isEspresso, e
               onChange={set('notes')}
               placeholder="Tasting notes, adjustments, observations..."
               rows={3}
-              className="w-full rounded-md border border-brew-600 bg-brew-950 px-3 py-2 text-sm text-brew-900 placeholder-brew-600 focus:outline-none focus:ring-2 focus:ring-tan-500 focus:border-transparent transition resize-none"
+              className="w-full rounded-md border border-brew-600 bg-brew-950 px-3 py-2 text-sm text-brew-900 placeholder-brew-700 focus:outline-none focus:ring-2 focus:ring-tan-500 focus:border-transparent transition resize-none"
             />
           </div>
           <div className="flex gap-2 pb-2">
             <button
               type="submit"
               disabled={isSaving}
-              className="flex-1 bg-tan-500 text-brew-900 py-3 rounded-full font-bold text-sm uppercase tracking-wider hover:bg-tan-400 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="flex-1 bg-brew-950 text-brew-900 py-3 rounded-full font-bold text-sm uppercase tracking-wider hover:bg-brew-300 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isSaving ? 'Saving…' : editingId ? 'Update Brew' : 'Save Brew'}
             </button>
@@ -479,13 +466,13 @@ export default function CoffeeLog({ method }) {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by brand..."
-              className="flex-1 rounded-md border border-brew-600 bg-brew-950 px-3 py-2 text-sm text-brew-900 placeholder-brew-600 focus:outline-none focus:ring-2 focus:ring-tan-500 focus:border-transparent transition"
+              className="flex-1 rounded-md border border-brew-600 bg-brew-950 px-3 py-2 text-sm text-brew-900 placeholder-brew-700 focus:outline-none focus:ring-2 focus:ring-tan-500 focus:border-transparent transition"
             />
             <div className="relative">
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="appearance-none rounded-md border border-brew-600 bg-brew-800 pl-3 pr-8 py-2 text-sm text-brew-300 focus:outline-none focus:ring-2 focus:ring-tan-500 transition"
+                className="appearance-none rounded-md border border-brew-600 bg-brew-800 pl-3 pr-8 py-2 text-sm text-tan-50 focus:outline-none focus:ring-2 focus:ring-tan-500 transition"
               >
                 {SORT_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>{o.label}</option>
@@ -518,7 +505,7 @@ export default function CoffeeLog({ method }) {
                   </div>
                   <div className="flex items-center gap-2">
                     {entry.rating > 0 && <StarRating value={entry.rating} onChange={() => {}} readonly size="sm" />}
-                    <span className="flex items-center gap-1 text-xs text-tan-500 font-bold bg-brew-700 px-2 py-0.5 rounded">
+                    <span className="flex items-center gap-1 text-xs text-brew-900 font-bold bg-brew-950 px-2 py-0.5 rounded">
                       <Bean className="w-3 h-3" />{entry.dose}
                     </span>
                     <svg
@@ -566,10 +553,10 @@ export default function CoffeeLog({ method }) {
                         </div>
                       )}
                       <div className="flex gap-2 mt-4 pt-3 border-t border-brew-700">
-                        <button onClick={() => handleEdit(entry)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider text-tan-500 hover:text-tan-300 hover:bg-brew-700 transition-colors">
+                        <button onClick={() => handleEdit(entry)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider text-tan-50 hover:text-brew-400 hover:bg-brew-700 transition-colors">
                           <Pencil className="w-3.5 h-3.5" />Edit
                         </button>
-                        <button onClick={() => handleDuplicate(entry)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider text-tan-500 hover:text-tan-300 hover:bg-brew-700 transition-colors">
+                        <button onClick={() => handleDuplicate(entry)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider text-tan-50 hover:text-brew-400 hover:bg-brew-700 transition-colors">
                           <Copy className="w-3.5 h-3.5" />Duplicate
                         </button>
                         <button onClick={() => setDeleteConfirmId(entry.id)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider text-red-500 hover:text-red-400 hover:bg-brew-700 transition-colors">
@@ -585,12 +572,9 @@ export default function CoffeeLog({ method }) {
         </div>
       )}
 
+
       {loading && (
-        <div className="space-y-2">
-          <SkeletonCard />
-          <SkeletonCard />
-          <SkeletonCard />
-        </div>
+        <p className="text-center text-xs uppercase tracking-[0.25em] text-brew-600 py-12 animate-pulse">Brewing…</p>
       )}
 
       {!loading && allMethodEntries.length === 0 && (

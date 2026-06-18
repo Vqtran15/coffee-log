@@ -54,7 +54,7 @@ function App() {
             </button>
           </div>
           <div className="mt-5 h-1 bg-brew-700" />
-          <p className="text-brew-600 text-xs tracking-[0.2em] uppercase mt-3 pb-5">Version 1.1.0</p>
+          <p className="text-brew-600 text-xs tracking-[0.2em] uppercase mt-3 pb-5">Version 1.1.1</p>
         </div>
       </header>
 
@@ -72,7 +72,7 @@ function App() {
               onClick={() => setActiveTab(tab)}
               className={`flex-1 py-2.5 rounded-full text-xs font-bold uppercase tracking-wide transition-all duration-200 ${
                 activeTab.method === tab.method
-                  ? 'bg-tan-500 text-brew-900'
+                  ? 'bg-brew-950 text-brew-900'
                   : 'text-brew-400 hover:text-tan-50 bg-brew-800'
               }`}
             >
