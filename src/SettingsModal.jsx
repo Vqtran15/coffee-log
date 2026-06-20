@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { X, Plus, Trash2, ChevronUp, ChevronDown, LogOut, Settings, AlertTriangle, KeyRound } from 'lucide-react'
+import { X, Plus, Trash2, ChevronUp, ChevronDown, LogOut, Settings, AlertTriangle, KeyRound, Pencil } from 'lucide-react'
 import { supabase } from './supabase'
 import { ICON_OPTIONS } from './icons'
 
@@ -23,6 +23,9 @@ export default function SettingsModal({ isOpen, onClose, categories, onCategorie
   const [saving, setSaving] = useState(false)
   const [justAddedId, setJustAddedId] = useState(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
+  const [editingCategoryId, setEditingCategoryId] = useState(null)
+  const [editRatio, setEditRatio] = useState({ ratio_coffee: '1', ratio_water: '15' })
+  const [editSaving, setEditSaving] = useState(false)
 
   // Account state
   const [confirmDeleteAccount, setConfirmDeleteAccount] = useState(false)
@@ -90,6 +93,24 @@ export default function SettingsModal({ isOpen, onClose, categories, onCategorie
     ])
     onCategoriesChange(updated)
     setConfirmDeleteId(null)
+  }
+
+  async function handleSaveRatio(id) {
+    setEditSaving(true)
+    try {
+      const updates = {
+        ratio_coffee: parseFloat(editRatio.ratio_coffee) || 1,
+        ratio_water: parseFloat(editRatio.ratio_water) || 15,
+      }
+      const { error } = await supabase.from('brew_categories').update(updates).eq('id', id)
+      if (error) throw error
+      onCategoriesChange(categories.map((c) => c.id === id ? { ...c, ...updates } : c))
+      setEditingCategoryId(null)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setEditSaving(false)
+    }
   }
 
   async function handleDeleteAccount() {
@@ -171,36 +192,93 @@ export default function SettingsModal({ isOpen, onClose, categories, onCategorie
             <div className="space-y-2">
               {categories.map((cat, index) => {
                 const { Icon } = ICON_OPTIONS.find((o) => o.name === cat.icon_name) || ICON_OPTIONS[1]
+                const isEditing = editingCategoryId === cat.id
                 return (
-                  <div
-                    key={cat.id}
-                    className={`flex items-center gap-2 bg-brew-700/30 rounded-xl px-3 py-2.5 border border-brew-600 ${justAddedId === cat.id ? 'entry-flash' : ''}`}
-                  >
-                    <div className="flex flex-col">
-                      <button onClick={() => move(index, -1)} disabled={index === 0} className="text-tan-50/50 hover:text-tan-50 disabled:opacity-20 transition-colors">
-                        <ChevronUp className="w-3.5 h-3.5" />
-                      </button>
-                      <button onClick={() => move(index, 1)} disabled={index === categories.length - 1} className="text-tan-50/50 hover:text-tan-50 disabled:opacity-20 transition-colors">
-                        <ChevronDown className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-
-                    <Icon className="w-4 h-4 text-tan-50 shrink-0" />
-
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-tan-50 truncate">{cat.name}</p>
-                      <p className="text-xs text-brew-400">{cat.has_brew_time ? 'Espresso · yield + time' : `Ratio 1:${cat.ratio_water}`}</p>
-                    </div>
-
-                    {confirmDeleteId === cat.id ? (
-                      <div className="flex items-center gap-2 shrink-0">
-                        <button onClick={() => handleDeleteCategory(cat.id)} className="text-xs font-bold text-red-400 uppercase tracking-wide hover:text-red-300 transition-colors">Confirm</button>
-                        <button onClick={() => setConfirmDeleteId(null)} className="text-xs font-bold text-tan-50/60 uppercase tracking-wide hover:text-tan-50 transition-colors">Cancel</button>
+                  <div key={cat.id} className={`rounded-xl border border-brew-600 overflow-hidden ${justAddedId === cat.id ? 'entry-flash' : ''}`}>
+                    <div className="flex items-center gap-2 bg-brew-700/30 px-3 py-2.5">
+                      <div className="flex flex-col">
+                        <button onClick={() => move(index, -1)} disabled={index === 0} className="text-tan-50/50 hover:text-tan-50 disabled:opacity-20 transition-colors">
+                          <ChevronUp className="w-3.5 h-3.5" />
+                        </button>
+                        <button onClick={() => move(index, 1)} disabled={index === categories.length - 1} className="text-tan-50/50 hover:text-tan-50 disabled:opacity-20 transition-colors">
+                          <ChevronDown className="w-3.5 h-3.5" />
+                        </button>
                       </div>
-                    ) : (
-                      <button onClick={() => setConfirmDeleteId(cat.id)} className="text-tan-50/40 hover:text-red-400 transition-colors shrink-0">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+
+                      <Icon className="w-4 h-4 text-tan-50 shrink-0" />
+
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-tan-50 truncate">{cat.name}</p>
+                        <p className="text-xs text-brew-400">{cat.has_brew_time ? 'Espresso · yield + time' : `Ratio 1:${cat.ratio_water}`}</p>
+                      </div>
+
+                      <div className="flex items-center gap-1 shrink-0">
+                        {confirmDeleteId === cat.id ? (
+                          <>
+                            <button onClick={() => handleDeleteCategory(cat.id)} className="text-xs font-bold text-red-400 uppercase tracking-wide hover:text-red-300 transition-colors">Confirm</button>
+                            <button onClick={() => setConfirmDeleteId(null)} className="text-xs font-bold text-tan-50/60 uppercase tracking-wide hover:text-tan-50 transition-colors ml-2">Cancel</button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => {
+                                if (isEditing) { setEditingCategoryId(null) } else {
+                                  setEditingCategoryId(cat.id)
+                                  setEditRatio({ ratio_coffee: String(cat.ratio_coffee), ratio_water: String(cat.ratio_water) })
+                                  setConfirmDeleteId(null)
+                                }
+                              }}
+                              className={`transition-colors ${isEditing ? 'text-tan-50' : 'text-tan-50/40 hover:text-tan-50'}`}
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                            <button onClick={() => { setConfirmDeleteId(cat.id); setEditingCategoryId(null) }} className="text-tan-50/40 hover:text-red-400 transition-colors ml-1">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    {isEditing && (
+                      <div className="border-t border-brew-600 bg-brew-900 px-3 py-3 entry-enter">
+                        <p className="text-xs font-bold text-tan-50 uppercase tracking-wider mb-2">Recommended Ratio</p>
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="number"
+                            value={editRatio.ratio_coffee}
+                            onChange={(e) => setEditRatio((r) => ({ ...r, ratio_coffee: e.target.value }))}
+                            min="0.1"
+                            step="0.1"
+                            className="w-16 text-center rounded-md border border-brew-600 bg-brew-950 px-2 py-1.5 text-sm text-brew-900 focus:outline-none focus:ring-2 focus:ring-tan-500 transition"
+                          />
+                          <span className="text-tan-50 font-bold">:</span>
+                          <input
+                            type="number"
+                            value={editRatio.ratio_water}
+                            onChange={(e) => setEditRatio((r) => ({ ...r, ratio_water: e.target.value }))}
+                            min="0.1"
+                            step="0.1"
+                            className="w-16 text-center rounded-md border border-brew-600 bg-brew-950 px-2 py-1.5 text-sm text-brew-900 focus:outline-none focus:ring-2 focus:ring-tan-500 transition"
+                          />
+                          <span className="text-brew-400 text-xs">coffee : {cat.has_brew_time ? 'yield' : 'water'}</span>
+                        </div>
+                        <div className="flex gap-2 mt-3">
+                          <button
+                            onClick={() => handleSaveRatio(cat.id)}
+                            disabled={editSaving}
+                            className="flex-1 bg-brew-950 text-brew-900 py-2 rounded-full font-bold text-xs uppercase tracking-wider hover:bg-brew-300 transition-colors disabled:opacity-60"
+                          >
+                            {editSaving ? 'Saving…' : 'Save'}
+                          </button>
+                          <button
+                            onClick={() => setEditingCategoryId(null)}
+                            className="px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider text-tan-50/60 border border-brew-600 hover:text-tan-50 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
                     )}
                   </div>
                 )

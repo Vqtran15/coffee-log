@@ -2,6 +2,11 @@ import { useState, useEffect } from 'react'
 import { Scale, SlidersHorizontal, Droplets, Calendar, FileText, Star, Plus, BarChart2, Pencil, Copy, Trash2, Coffee, Bean, Timer } from 'lucide-react'
 import { supabase } from './supabase'
 
+const localDate = () => {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 function toEntry(row) {
   return {
     id: row.id,
@@ -42,7 +47,7 @@ const emptyForm = () => ({
   waterOrYield: '',
   brewTime: '',
   notes: '',
-  date: new Date().toISOString().split('T')[0],
+  date: localDate(),
   rating: 0,
 })
 
@@ -370,7 +375,7 @@ export default function CoffeeLog({ category }) {
       waterOrYield: entry.waterOrYield || '',
       brewTime: entry.brewTime || '',
       notes: entry.notes || '',
-      date: entry.date || new Date().toISOString().split('T')[0],
+      date: entry.date || localDate(),
       rating: entry.rating || 0,
     })
     setEditingId(entry.id)
@@ -386,7 +391,7 @@ export default function CoffeeLog({ category }) {
       waterOrYield: entry.waterOrYield || '',
       brewTime: entry.brewTime || '',
       notes: entry.notes || '',
-      date: new Date().toISOString().split('T')[0],
+      date: localDate(),
       rating: 0,
     })
     setEditingId(null)
