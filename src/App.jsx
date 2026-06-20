@@ -109,7 +109,9 @@ function App() {
       setActiveCategory(cats[0] || null)
     } else {
       setCategories(data)
-      setActiveCategory(data[0])
+      const savedId = localStorage.getItem('lastActiveCategoryId')
+      const restored = (savedId && data.find((c) => c.id === savedId)) || data[0]
+      setActiveCategory(restored)
     }
     setCategoriesLoaded(true)
   }
@@ -184,7 +186,7 @@ function App() {
             return (
               <button
                 key={cat.id ?? cat.name}
-                onClick={() => setActiveCategory(cat)}
+                onClick={() => { setActiveCategory(cat); localStorage.setItem('lastActiveCategoryId', cat.id) }}
                 className={`shrink-0 flex-1 min-w-[3.5rem] py-2.5 rounded-full text-xs font-bold uppercase tracking-wide transition-all duration-200 flex flex-col items-center ${
                   activeCategory?.id === cat.id || activeCategory?.name === cat.name
                     ? 'bg-brew-950 text-brew-900'
